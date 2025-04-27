@@ -3,12 +3,15 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Aplikasi Manajemen Project Klien NextGen (Firebase)</title>
+    <title>Aplikasi Manajemen Project Klien NextGen (Supabase)</title>
 
-    <!-- Firebase SDK -->
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <!-- Supabase Client Library -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <!-- Bundle ini sudah termasuk date-fns -->
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
 
     <style>
         /* --- CSS Variables for Theming --- */
@@ -200,7 +203,8 @@
     <div id="loadingOverlay"><div class="spinner"></div></div>
 
     <header>
-        <h1>Manajemen Project NextGen (Firebase)</h1>
+        <!-- Keep header content the same, maybe update title -->
+        <h1>Manajemen Project NextGen (Supabase)</h1>
         <div class="header-controls">
             <button id="themeToggleBtn" title="Toggle Light/Dark Mode">☀️</button>
             <button class="hamburger" onclick="toggleMenu()" title="Toggle Menu" aria-label="Toggle Menu">☰</button>
@@ -214,7 +218,7 @@
     </header>
 
     <main>
-        <!-- Dashboard Section -->
+        <!-- Sections remain structurally the same -->
          <section id="dashboardSection" class="active">
             <h2>Dashboard Utama</h2>
             <div class="dashboard-stats">
@@ -236,106 +240,133 @@
             </div>
         </section>
 
-        <!-- Input Section -->
         <section id="inputSection">
-            <h2>Input Pesanan Baru</h2>
-            <form id="orderForm" novalidate>
-                <div class="form-grid">
-                    <div class="form-group"> <label for="clientName">Nama Klien</label> <input type="text" id="clientName" placeholder="Masukkan nama klien" required aria-describedby="clientNameError" /> <div class="error-message" id="clientNameError"></div> </div>
-                    <div class="form-group"> <label for="clientContact">Kontak Klien (Email/Telp)</label> <input type="text" id="clientContact" placeholder="Opsional: email@contoh.com / 08xxxx" /> </div>
-                    <div class="form-group"> <label for="projectType">Jenis Project</label> <select id="projectType" required aria-describedby="projectTypeError"> <option value="">-- Pilih Jenis Project --</option> <option value="Logo">Logo</option> <option value="Website">Website</option> <option value="Artikel">Artikel</option> <option value="Video">Video</option> <option value="Cerpen">Cerpen</option> <option value="Poster">Poster</option> <option value="Aplikasi Mobile">Aplikasi Mobile</option> <option value="Video Animasi">Video Animasi</option> <option value="Lainnya">Lainnya</option> </select> <div class="error-message" id="projectTypeError"></div> </div>
-                    <div class="form-group"> <label for="projectPrice">Harga Project (Rp)</label> <input type="number" id="projectPrice" placeholder="Contoh: 500000" min="0" step="1000" aria-describedby="projectPriceError" /> <div class="error-message" id="projectPriceError"></div> </div>
-                    <div class="form-group"> <label for="orderDate">Tanggal Order</label> <input type="date" id="orderDate" required aria-describedby="orderDateError"/> <div class="error-message" id="orderDateError"></div> </div>
-                    <div class="form-group"> <label for="deadline">Deadline</label> <input type="date" id="deadline" required aria-describedby="deadlineError"/> <div class="error-message" id="deadlineError"></div> </div>
-                    <div class="form-group"> <label for="priority">Prioritas</label> <select id="priority" required aria-describedby="priorityError"> <option value="Medium">Sedang</option> <option value="High">Tinggi</option> <option value="Low">Rendah</option> </select> <div class="error-message" id="priorityError"></div> </div>
-                    <div class="form-group"> <label for="attachmentLink">Link Lampiran/Referensi</label> <input type="url" id="attachmentLink" placeholder="Opsional: https://..." aria-describedby="attachmentLinkError"/> <div class="error-message" id="attachmentLinkError"></div> </div>
-                    <div class="form-group form-group-full"> <label for="projectTags">Tags (Pisahkan dengan koma)</label> <input type="text" id="projectTags" placeholder="Opsional: Revisi Mayor, Desain Cetak, Prioritas Utama" /> </div>
-                    <div class="form-group form-group-full"> <label for="notes">Catatan / Brief</label> <textarea id="notes" placeholder="Detail project, revisi, dll. Tips: Gunakan '- [ ]' atau '- [x]' untuk checklist." rows="5"></textarea> </div>
-                </div>
-                <button type="submit"><span>➕</span> Tambah Pesanan</button>
-            </form>
-        </section>
+             <h2>Input Pesanan Baru</h2>
+             <form id="orderForm" novalidate>
+                 <div class="form-grid">
+                     <div class="form-group"> <label for="clientName">Nama Klien</label> <input type="text" id="clientName" placeholder="Masukkan nama klien" required aria-describedby="clientNameError" /> <div class="error-message" id="clientNameError"></div> </div>
+                     <div class="form-group"> <label for="clientContact">Kontak Klien (Email/Telp)</label> <input type="text" id="clientContact" placeholder="Opsional: email@contoh.com / 08xxxx" /> </div>
+                     <div class="form-group"> <label for="projectType">Jenis Project</label> <select id="projectType" required aria-describedby="projectTypeError"> <option value="">-- Pilih Jenis Project --</option> <option value="Logo">Logo</option> <option value="Website">Website</option> <option value="Artikel">Artikel</option> <option value="Video">Video</option> <option value="Cerpen">Cerpen</option> <option value="Poster">Poster</option> <option value="Aplikasi Mobile">Aplikasi Mobile</option> <option value="Video Animasi">Video Animasi</option> <option value="Lainnya">Lainnya</option> </select> <div class="error-message" id="projectTypeError"></div> </div>
+                     <div class="form-group"> <label for="projectPrice">Harga Project (Rp)</label> <input type="number" id="projectPrice" placeholder="Contoh: 500000" min="0" step="1000" aria-describedby="projectPriceError" /> <div class="error-message" id="projectPriceError"></div> </div>
+                     <div class="form-group"> <label for="orderDate">Tanggal Order</label> <input type="date" id="orderDate" required aria-describedby="orderDateError"/> <div class="error-message" id="orderDateError"></div> </div>
+                     <div class="form-group"> <label for="deadline">Deadline</label> <input type="date" id="deadline" required aria-describedby="deadlineError"/> <div class="error-message" id="deadlineError"></div> </div>
+                     <div class="form-group"> <label for="priority">Prioritas</label> <select id="priority" required aria-describedby="priorityError"> <option value="Medium">Sedang</option> <option value="High">Tinggi</option> <option value="Low">Rendah</option> </select> <div class="error-message" id="priorityError"></div> </div>
+                     <div class="form-group"> <label for="attachmentLink">Link Lampiran/Referensi</label> <input type="url" id="attachmentLink" placeholder="Opsional: https://..." aria-describedby="attachmentLinkError"/> <div class="error-message" id="attachmentLinkError"></div> </div>
+                     <div class="form-group form-group-full"> <label for="projectTags">Tags (Pisahkan dengan koma)</label> <input type="text" id="projectTags" placeholder="Opsional: Revisi Mayor, Desain Cetak, Prioritas Utama" /> </div>
+                     <div class="form-group form-group-full"> <label for="notes">Catatan / Brief</label> <textarea id="notes" placeholder="Detail project, revisi, dll. Tips: Gunakan '- [ ]' atau '- [x]' untuk checklist." rows="5"></textarea> </div>
+                 </div>
+                 <button type="submit"><span>➕</span> Tambah Pesanan</button>
+             </form>
+         </section>
 
-        <!-- List Section -->
-        <section id="listSection">
-            <h2>List Pesanan</h2>
-            <div class="list-controls">
-                <div class="filter-area">
-                    <div> <label for="searchInput">🔍 Cari</label> <input type="text" id="searchInput" placeholder="Klien / Project / Kontak / Tags..." > </div>
-                    <div> <label for="statusFilter">🚦 Status</label> <select id="statusFilter" > <option value="">-- Semua Status --</option> <option value="Pending">Pending</option> <option value="In Progress">In Progress</option> <option value="Completed">Completed</option> <option value="Delivered">Delivered</option> </select> </div>
-                    <div> <label for="priorityFilter">🚩 Prioritas</label> <select id="priorityFilter" > <option value="">-- Semua Prioritas --</option> <option value="High">Tinggi</option> <option value="Medium">Sedang</option> <option value="Low">Rendah</option> </select> </div>
-                    <div> <label for="tagFilter">🏷️ Filter Tag</label> <input type="text" id="tagFilter" placeholder="Masukkan satu tag..." > </div>
-                    <div class="date-range-filter"> <div> <label for="startDateFilter">🗓️ Dari Tgl Order</label> <input type="date" id="startDateFilter" > </div> <div> <label for="endDateFilter">🗓️ Sampai Tgl Order</label> <input type="date" id="endDateFilter" > </div> </div>
-                </div>
-                 <div class="list-actions"> <div> <label for="showArchived">Tampilkan Arsip:</label> <input type="checkbox" id="showArchived"> </div> <button onclick="exportToCSV()" title="Ekspor data yang tampil di tabel ke CSV"><span>📄</span> Ekspor ke CSV</button> </div>
-            </div>
-
-             <div id="bulkActionsContainer">
-                 <div> <label for="bulkStatusChange">Ubah Status (<span id="selectedCount">0</span> terpilih):</label> <select id="bulkStatusChange" title="Pilih status baru untuk item aktif terpilih"> <option value="">-- Pilih Status --</option> <option value="Pending">Pending</option> <option value="In Progress">In Progress</option> <option value="Completed">Completed</option> <option value="Delivered">Delivered</option> </select> <button id="bulkChangeStatusBtn" class="secondary" disabled title="Terapkan perubahan status ke item aktif terpilih"><span>🔄</span> Terapkan</button> </div>
-                 <div> <button id="bulkArchiveBtn" class="warning" disabled title="Arsipkan item aktif terpilih"><span>📁</span> Arsipkan Terpilih</button> <button id="bulkDeleteBtn" class="danger" disabled title="Hapus permanen item arsip terpilih"><span>🗑️</span> Hapus Arsip Terpilih</button> </div>
+         <section id="listSection">
+             <h2>List Pesanan</h2>
+             <div class="list-controls">
+                 <div class="filter-area">
+                     <div> <label for="searchInput">🔍 Cari</label> <input type="text" id="searchInput" placeholder="Klien / Project / Kontak / Tags..." > </div>
+                     <div> <label for="statusFilter">🚦 Status</label> <select id="statusFilter" > <option value="">-- Semua Status --</option> <option value="Pending">Pending</option> <option value="In Progress">In Progress</option> <option value="Completed">Completed</option> <option value="Delivered">Delivered</option> </select> </div>
+                     <div> <label for="priorityFilter">🚩 Prioritas</label> <select id="priorityFilter" > <option value="">-- Semua Prioritas --</option> <option value="High">Tinggi</option> <option value="Medium">Sedang</option> <option value="Low">Rendah</option> </select> </div>
+                     <div> <label for="tagFilter">🏷️ Filter Tag</label> <input type="text" id="tagFilter" placeholder="Masukkan satu tag..." > </div>
+                     <div class="date-range-filter"> <div> <label for="startDateFilter">🗓️ Dari Tgl Order</label> <input type="date" id="startDateFilter" > </div> <div> <label for="endDateFilter">🗓️ Sampai Tgl Order</label> <input type="date" id="endDateFilter" > </div> </div>
+                 </div>
+                  <div class="list-actions"> <div> <label for="showArchived">Tampilkan Arsip:</label> <input type="checkbox" id="showArchived"> </div> <button onclick="exportToCSV()" title="Ekspor data yang tampil di tabel ke CSV"><span>📄</span> Ekspor ke CSV</button> </div>
              </div>
 
-            <div class="table-container">
-                <table>
-                    <thead>
-                        <tr>
-                            <th scope="col" class="col-checkbox"><input type="checkbox" id="selectAllCheckbox" title="Pilih Semua di Halaman Ini"></th>
-                            <th scope="col" onclick="setSort('clientName')">Klien <span class="sort-indicator" data-col="clientName"></span></th>
-                            <th scope="col">Kontak</th>
-                            <th scope="col" onclick="setSort('projectType')">Project <span class="sort-indicator" data-col="projectType"></span></th>
-                            <th scope="col" onclick="setSort('projectPrice')" class="col-price">Harga <span class="sort-indicator" data-col="projectPrice"></span></th>
-                            <th scope="col" onclick="setSort('orderDate')">Order <span class="sort-indicator" data-col="orderDate"></span></th>
-                            <th scope="col" onclick="setSort('deadline')">Deadline <span class="sort-indicator" data-col="deadline"></span></th>
-                            <th scope="col" onclick="setSort('priority')">Prioritas <span class="sort-indicator" data-col="priority"></span></th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Tags</th>
-                            <th scope="col">Link</th>
-                            <th scope="col">Catatan</th>
-                            <th scope="col">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="orderTable"></tbody>
-                </table>
-            </div>
-            <p id="noOrdersMsg" class="empty-message" style="display: none;">Tidak ada pesanan yang cocok dengan filter Anda.</p>
+              <div id="bulkActionsContainer">
+                  <div> <label for="bulkStatusChange">Ubah Status (<span id="selectedCount">0</span> terpilih):</label> <select id="bulkStatusChange" title="Pilih status baru untuk item aktif terpilih"> <option value="">-- Pilih Status --</option> <option value="Pending">Pending</option> <option value="In Progress">In Progress</option> <option value="Completed">Completed</option> <option value="Delivered">Delivered</option> </select> <button id="bulkChangeStatusBtn" class="secondary" disabled title="Terapkan perubahan status ke item aktif terpilih"><span>🔄</span> Terapkan</button> </div>
+                  <div> <button id="bulkArchiveBtn" class="warning" disabled title="Arsipkan item aktif terpilih"><span>📁</span> Arsipkan Terpilih</button> <button id="bulkDeleteBtn" class="danger" disabled title="Hapus permanen item arsip terpilih"><span>🗑️</span> Hapus Arsip Terpilih</button> </div>
+              </div>
 
-             <div id="paginationControls">
-                 <div class="items-per-page"> <label for="itemsPerPageSelect">Item per halaman:</label> <select id="itemsPerPageSelect" title="Jumlah item yang ditampilkan per halaman"> <option value="10">10</option> <option value="15">15</option> <option value="25">25</option> <option value="50">50</option> </select> </div>
-                 <div id="pageInfo">Halaman 1 dari 1</div>
-                 <div class="page-nav"> <button id="prevPageBtn" disabled title="Halaman Sebelumnya"><span>◀️</span> Sebelumnya</button> <button id="nextPageBtn" disabled title="Halaman Berikutnya"><span>▶️</span> Berikutnya</button> </div>
+             <div class="table-container">
+                 <table>
+                     <thead>
+                         <tr>
+                             <th scope="col" class="col-checkbox"><input type="checkbox" id="selectAllCheckbox" title="Pilih Semua di Halaman Ini"></th>
+                             <th scope="col" onclick="setSort('clientName')">Klien <span class="sort-indicator" data-col="clientName"></span></th>
+                             <th scope="col">Kontak</th>
+                             <th scope="col" onclick="setSort('projectType')">Project <span class="sort-indicator" data-col="projectType"></span></th>
+                             <th scope="col" onclick="setSort('projectPrice')" class="col-price">Harga <span class="sort-indicator" data-col="projectPrice"></span></th>
+                             <th scope="col" onclick="setSort('orderDate')">Order <span class="sort-indicator" data-col="orderDate"></span></th>
+                             <th scope="col" onclick="setSort('deadline')">Deadline <span class="sort-indicator" data-col="deadline"></span></th>
+                             <th scope="col" onclick="setSort('priority')">Prioritas <span class="sort-indicator" data-col="priority"></span></th>
+                             <th scope="col">Status</th>
+                             <th scope="col">Tags</th>
+                             <th scope="col">Link</th>
+                             <th scope="col">Catatan</th>
+                             <th scope="col">Aksi</th>
+                         </tr>
+                     </thead>
+                     <tbody id="orderTable"></tbody>
+                 </table>
              </div>
-        </section>
+             <p id="noOrdersMsg" class="empty-message" style="display: none;">Tidak ada pesanan yang cocok dengan filter Anda.</p>
 
-        <!-- Report Section -->
+              <div id="paginationControls">
+                  <div class="items-per-page"> <label for="itemsPerPageSelect">Item per halaman:</label> <select id="itemsPerPageSelect" title="Jumlah item yang ditampilkan per halaman"> <option value="10">10</option> <option value="15">15</option> <option value="25">25</option> <option value="50">50</option> </select> </div>
+                  <div id="pageInfo">Halaman 1 dari 1</div>
+                  <div class="page-nav"> <button id="prevPageBtn" disabled title="Halaman Sebelumnya"><span>◀️</span> Sebelumnya</button> <button id="nextPageBtn" disabled title="Halaman Berikutnya"><span>▶️</span> Berikutnya</button> </div>
+              </div>
+         </section>
+
          <section id="reportSection">
-             <h2>Laporan Visual (Pesanan Aktif)</h2>
-             <div class="report-filters"> <div> <label for="reportProjectTypeFilter">Filter Jenis Project:</label> <select id="reportProjectTypeFilter" title="Filter laporan berdasarkan jenis project"> <option value="">-- Semua Jenis Project --</option> </select> </div> <div class="date-range-filter"> <div> <label for="reportStartDateFilter">Dari Tgl Order:</label> <input type="date" id="reportStartDateFilter" title="Filter laporan dari tanggal order ini"> </div> <div> <label for="reportEndDateFilter">Sampai Tgl Order:</label> <input type="date" id="reportEndDateFilter" title="Filter laporan sampai tanggal order ini"> </div> </div> <button id="resetReportFiltersBtn" class="secondary" title="Hapus filter laporan"><span>🔄</span> Reset Filter</button> </div>
-             <div class="report-container"> <div class="report-box"> <h3>📊 Distribusi Status</h3> <div class="report-content"> <div class="chart-container"> <canvas id="statusChart"></canvas> </div> <div id="reportProjectStatus"></div> </div> </div> <div class="report-box"> <h3>🏗️ Jumlah per Jenis Project</h3> <div class="report-content"> <div class="chart-container"> <canvas id="projectTypeChart"></canvas> </div> <div id="reportProjectType"></div> </div> </div> <div class="report-box"> <h3>💰 Total Nilai per Status</h3> <div class="report-content"> <div id="reportProjectValue"></div> </div> </div> <div class="report-box"> <h3>👥 Ringkasan Klien (Top 10 by Value)</h3> <div class="report-content"> <div id="clientSummaryTableContainer"> <table id="clientSummaryTable"> <thead> <tr> <th scope="col" onclick="sortClientTable(0)" title="Urutkan berdasarkan Nama Klien">Klien</th> <th scope="col" onclick="sortClientTable(1)" title="Urutkan berdasarkan Jumlah Order">Jumlah</th> <th scope="col" onclick="sortClientTable(2)" title="Urutkan berdasarkan Total Nilai">Total Nilai</th> </tr> </thead> <tbody></tbody> </table> </div> </div> </div> <div class="report-box" style="grid-column: span 2;"> <h3>📈 Tren Order Masuk per Bulan</h3> <div class="report-content"> <div class="chart-container" style="height: 350px;"> <canvas id="trendChart"></canvas> </div> </div> </div> </div>
-             <div class="report-box" style="margin-top: 25px;"> <h3>🔢 Total Keseluruhan (Sesuai Filter)</h3> <p><b>Total Pesanan Aktif:</b> <span id="reportTotalActiveOrders">0</span></p> <p><b>Total Nilai Aktif:</b> <span id="reportTotalActiveValue">Rp 0</span></p> <p><b>Total Pesanan Diarsipkan (Global):</b> <span id="reportTotalArchivedOrders">0</span></p> </div>
-        </section>
+              <h2>Laporan Visual (Pesanan Aktif)</h2>
+              <div class="report-filters"> <div> <label for="reportProjectTypeFilter">Filter Jenis Project:</label> <select id="reportProjectTypeFilter" title="Filter laporan berdasarkan jenis project"> <option value="">-- Semua Jenis Project --</option> </select> </div> <div class="date-range-filter"> <div> <label for="reportStartDateFilter">Dari Tgl Order:</label> <input type="date" id="reportStartDateFilter" title="Filter laporan dari tanggal order ini"> </div> <div> <label for="reportEndDateFilter">Sampai Tgl Order:</label> <input type="date" id="reportEndDateFilter" title="Filter laporan sampai tanggal order ini"> </div> </div> <button id="resetReportFiltersBtn" class="secondary" title="Hapus filter laporan"><span>🔄</span> Reset Filter</button> </div>
+              <div class="report-container"> <div class="report-box"> <h3>📊 Distribusi Status</h3> <div class="report-content"> <div class="chart-container"> <canvas id="statusChart"></canvas> </div> <div id="reportProjectStatus"></div> </div> </div> <div class="report-box"> <h3>🏗️ Jumlah per Jenis Project</h3> <div class="report-content"> <div class="chart-container"> <canvas id="projectTypeChart"></canvas> </div> <div id="reportProjectType"></div> </div> </div> <div class="report-box"> <h3>💰 Total Nilai per Status</h3> <div class="report-content"> <div id="reportProjectValue"></div> </div> </div> <div class="report-box"> <h3>👥 Ringkasan Klien (Top 10 by Value)</h3> <div class="report-content"> <div id="clientSummaryTableContainer"> <table id="clientSummaryTable"> <thead> <tr> <th scope="col" onclick="sortClientTable(0)" title="Urutkan berdasarkan Nama Klien">Klien</th> <th scope="col" onclick="sortClientTable(1)" title="Urutkan berdasarkan Jumlah Order">Jumlah</th> <th scope="col" onclick="sortClientTable(2)" title="Urutkan berdasarkan Total Nilai">Total Nilai</th> </tr> </thead> <tbody></tbody> </table> </div> </div> </div> <div class="report-box" style="grid-column: span 2;"> <h3>📈 Tren Order Masuk per Bulan</h3> <div class="report-content"> <div class="chart-container" style="height: 350px;"> <canvas id="trendChart"></canvas> </div> </div> </div> </div>
+              <div class="report-box" style="margin-top: 25px;"> <h3>🔢 Total Keseluruhan (Sesuai Filter)</h3> <p><b>Total Pesanan Aktif:</b> <span id="reportTotalActiveOrders">0</span></p> <p><b>Total Nilai Aktif:</b> <span id="reportTotalActiveValue">Rp 0</span></p> <p><b>Total Pesanan Diarsipkan (Global):</b> <span id="reportTotalArchivedOrders">0</span></p> </div>
+         </section>
 
-        <!-- Edit Modal -->
-         <div id="editModal" class="modal"> <div class="modal-content"> <button class="close-btn" onclick="closeEditModal()" title="Tutup" aria-label="Tutup">×</button> <h2>✏️ Edit Pesanan</h2> <form id="editForm" novalidate> <input type="hidden" id="editId"> <div class="form-grid"> <div class="form-group"> <label for="editClientName">Nama Klien</label> <input type="text" id="editClientName" required aria-describedby="editClientNameError"/> <div class="error-message" id="editClientNameError"></div> </div> <div class="form-group"> <label for="editClientContact">Kontak Klien (Email/Telp)</label> <input type="text" id="editClientContact" /> </div> <div class="form-group"> <label for="editProjectType">Jenis Project</label> <select id="editProjectType" required aria-describedby="editProjectTypeError"> <option value="">-- Pilih Jenis Project --</option> <option value="Logo">Logo</option> <option value="Website">Website</option> <option value="Artikel">Artikel</option> <option value="Video">Video</option> <option value="Cerpen">Cerpen</option> <option value="Poster">Poster</option> <option value="Aplikasi Mobile">Aplikasi Mobile</option> <option value="Video Animasi">Video Animasi</option> <option value="Lainnya">Lainnya</option> </select> <div class="error-message" id="editProjectTypeError"></div> </div> <div class="form-group"> <label for="editProjectPrice">Harga Project (Rp)</label> <input type="number" id="editProjectPrice" min="0" step="1000" aria-describedby="editProjectPriceError"/> <div class="error-message" id="editProjectPriceError"></div> </div> <div class="form-group"> <label for="editOrderDate">Tanggal Order</label> <input type="date" id="editOrderDate" required aria-describedby="editOrderDateError"/> <div class="error-message" id="editOrderDateError"></div> </div> <div class="form-group"> <label for="editDeadline">Deadline</label> <input type="date" id="editDeadline" required aria-describedby="editDeadlineError"/> <div class="error-message" id="editDeadlineError"></div> </div> <div class="form-group"> <label for="editPriority">Prioritas</label> <select id="editPriority" required aria-describedby="editPriorityError"> <option value="High">Tinggi</option> <option value="Medium">Sedang</option> <option value="Low">Rendah</option> </select> <div class="error-message" id="editPriorityError"></div> </div> <div class="form-group"> <label for="editStatus">Status</label> <select id="editStatus" required> <option value="Pending">Pending</option> <option value="In Progress">In Progress</option> <option value="Completed">Completed</option> <option value="Delivered">Delivered</option> </select> </div> <div class="form-group"> <label for="editAttachmentLink">Link Lampiran/Referensi</label> <input type="url" id="editAttachmentLink" aria-describedby="editAttachmentLinkError"/> <div class="error-message" id="editAttachmentLinkError"></div> </div> <div class="form-group"> <label for="editProjectTags">Tags (Pisahkan dengan koma)</label> <input type="text" id="editProjectTags" /> </div> <div class="form-group form-group-full"> <label for="editNotes">Catatan / Brief</label> <textarea id="editNotes" rows="5"></textarea> </div> </div> <button type="submit"><span>💾</span> Simpan Perubahan</button> <button type="button" class="secondary" onclick="closeEditModal()"><span>❌</span> Batal</button> </form> </div> </div>
+          <div id="editModal" class="modal"> <div class="modal-content"> <button class="close-btn" onclick="closeEditModal()" title="Tutup" aria-label="Tutup">×</button> <h2>✏️ Edit Pesanan</h2> <form id="editForm" novalidate> <input type="hidden" id="editId"> <div class="form-grid"> <div class="form-group"> <label for="editClientName">Nama Klien</label> <input type="text" id="editClientName" required aria-describedby="editClientNameError"/> <div class="error-message" id="editClientNameError"></div> </div> <div class="form-group"> <label for="editClientContact">Kontak Klien (Email/Telp)</label> <input type="text" id="editClientContact" /> </div> <div class="form-group"> <label for="editProjectType">Jenis Project</label> <select id="editProjectType" required aria-describedby="editProjectTypeError"> <option value="">-- Pilih Jenis Project --</option> <option value="Logo">Logo</option> <option value="Website">Website</option> <option value="Artikel">Artikel</option> <option value="Video">Video</option> <option value="Cerpen">Cerpen</option> <option value="Poster">Poster</option> <option value="Aplikasi Mobile">Aplikasi Mobile</option> <option value="Video Animasi">Video Animasi</option> <option value="Lainnya">Lainnya</option> </select> <div class="error-message" id="editProjectTypeError"></div> </div> <div class="form-group"> <label for="editProjectPrice">Harga Project (Rp)</label> <input type="number" id="editProjectPrice" min="0" step="1000" aria-describedby="editProjectPriceError"/> <div class="error-message" id="editProjectPriceError"></div> </div> <div class="form-group"> <label for="editOrderDate">Tanggal Order</label> <input type="date" id="editOrderDate" required aria-describedby="editOrderDateError"/> <div class="error-message" id="editOrderDateError"></div> </div> <div class="form-group"> <label for="editDeadline">Deadline</label> <input type="date" id="editDeadline" required aria-describedby="editDeadlineError"/> <div class="error-message" id="editDeadlineError"></div> </div> <div class="form-group"> <label for="editPriority">Prioritas</label> <select id="editPriority" required aria-describedby="editPriorityError"> <option value="High">Tinggi</option> <option value="Medium">Sedang</option> <option value="Low">Rendah</option> </select> <div class="error-message" id="editPriorityError"></div> </div> <div class="form-group"> <label for="editStatus">Status</label> <select id="editStatus" required> <option value="Pending">Pending</option> <option value="In Progress">In Progress</option> <option value="Completed">Completed</option> <option value="Delivered">Delivered</option> </select> </div> <div class="form-group"> <label for="editAttachmentLink">Link Lampiran/Referensi</label> <input type="url" id="editAttachmentLink" aria-describedby="editAttachmentLinkError"/> <div class="error-message" id="editAttachmentLinkError"></div> </div> <div class="form-group"> <label for="editProjectTags">Tags (Pisahkan dengan koma)</label> <input type="text" id="editProjectTags" /> </div> <div class="form-group form-group-full"> <label for="editNotes">Catatan / Brief</label> <textarea id="editNotes" rows="5"></textarea> </div> </div> <button type="submit"><span>💾</span> Simpan Perubahan</button> <button type="button" class="secondary" onclick="closeEditModal()"><span>❌</span> Batal</button> </form> </div> </div>
     </main>
-
 
     <div id="toastContainer"></div>
 
     <script>
-    // --- Firebase Configuration ---
-    const firebaseConfig = {
-        apiKey: "AIzaSyAJmqzKqIXD9Mi4o4c4zSvsLTYiMhe_0-I",
-        authDomain: "manajemenproject-d4bcf.firebaseapp.com",
-        projectId: "manajemenproject-d4bcf",
-        storageBucket: "manajemenproject-d4bcf.firebasestorage.app",
-        messagingSenderId: "252681637746",
-        appId: "1:252681637746:web:cd7eaf9fdacbae526997eb"
-    };
+    // --- Supabase Configuration ---
+    const SUPABASE_URL = 'https://lkcyfdslkrcfwhpqtdrl.supabase.co';
+    const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxrY3lmZHNsa3JjZndocHF0ZHJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDU3NDEzMjMsImV4cCI6MjA2MTMxNzMyM30.-hYMthgtncMRCcfCLM-gv1-Ok7_slSjTpBeD5cz4L3Q';
 
-    // --- Firebase Initialization ---
-    let db; let ordersCollection;
-    try { firebase.initializeApp(firebaseConfig); db = firebase.firestore(); ordersCollection = db.collection("orders"); }
-    catch (e) { console.error("Firebase initialization failed:", e); alert("Gagal menginisialisasi koneksi database."); }
+    // --- Supabase Initialization ---
+    let supabase; // Variabel lokal untuk menyimpan client Supabase *setelah* dibuat
+    try {
+        // Validasi bahwa URL dan Key BUKAN placeholder
+        if (!SUPABASE_URL || SUPABASE_URL === 'YOUR_SUPABASE_URL' || !SUPABASE_ANON_KEY || SUPABASE_ANON_KEY === 'YOUR_SUPABASE_ANON_KEY') {
+            throw new Error("Supabase URL or Anon Key not configured. Please replace placeholders in the script.");
+        }
+
+        // PERBAIKAN BENAR:
+        // Pastikan library Supabase global (window.supabase) sudah dimuat sebelum mencoba menggunakannya
+        if (typeof window.supabase === 'undefined' || typeof window.supabase.createClient !== 'function') {
+             throw new Error("Supabase library (window.supabase) not loaded correctly. Check the script tag in <head>.");
+        }
+
+        // Panggil 'createClient' dari OBJEK GLOBAL 'supabase' (dari CDN via window).
+        // Simpan HASILnya ke variabel LOKAL 'supabase'.
+        supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Verifikasi sederhana bahwa client berhasil dibuat
+        if (!supabase) {
+            throw new Error("Supabase client object could not be created after calling createClient.");
+        }
+
+        console.log("Supabase client initialized successfully.");
+
+    } catch (e) {
+        console.error("Supabase initialization failed:", e);
+        // Tampilkan pesan error yang lebih jelas kepada pengguna
+        alert(`Gagal menginisialisasi koneksi database Supabase: ${e.message}. Harap periksa konsol browser untuk detail dan pastikan URL/Kunci Anon sudah benar dalam kode, serta library Supabase termuat.`);
+        // Update loading overlay untuk menunjukkan error persisten
+        const loadingOverlayFail = document.getElementById('loadingOverlay');
+        if (loadingOverlayFail) {
+             loadingOverlayFail.innerHTML = '<p style="color: red; font-weight: bold;">Koneksi Database Gagal</p>';
+             loadingOverlayFail.style.backgroundColor = 'rgba(255,200,200,0.8)';
+             if (!loadingOverlayFail.classList.contains('show')) {
+                loadingOverlayFail.classList.add('show'); // Pastikan overlay terlihat
+             }
+        }
+        // Hentikan eksekusi lebih lanjut jika init gagal
+        throw new Error("Supabase init failed, stopping script execution.");
+    }
+
 
     // --- STATE & INITIALIZATION ---
     let orders = [];
@@ -345,7 +376,6 @@
     let currentPage = 1; let itemsPerPage = 15;
     let selectedOrderIds = new Set();
     let clientReportSort = { column: 2, direction: 'desc' };
-    // Removed: let currentOpenMenu = null;
 
     // --- UTILITIES ---
     const $ = (selector) => document.querySelector(selector);
@@ -375,54 +405,185 @@
     $$('#orderForm [required], #orderForm input[type="date"], #orderForm input[type="number"], #orderForm input[type="url"]').forEach(field => { field.addEventListener('input', () => validateField(field)); field.addEventListener('change', () => validateField(field)); });
     $$('#editForm [required], #editForm input[type="date"], #editForm input[type="number"], #editForm input[type="url"]').forEach(field => { field.addEventListener('input', () => validateField(field)); field.addEventListener('change', () => validateField(field)); });
 
-    // --- DATA MANAGEMENT (FIRESTORE) ---
-    async function loadData() { if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } showLoading(); orders = []; try { const querySnapshot = await ordersCollection.orderBy("orderDate", "desc").orderBy("clientName", "asc").get(); querySnapshot.forEach((doc) => { const data = doc.data(); orders.push({ ...data, firestoreId: doc.id }); }); console.log(`Loaded ${orders.length} orders from Firestore.`); itemsPerPage = parseInt(localStorage.getItem('itemsPerPage') || '15', 10); $('#itemsPerPageSelect').value = itemsPerPage; populateReportProjectTypeFilter(); applyFilterAndSort(); updateDashboard(); } catch (error) { console.error("Error loading orders: ", error); showToast("Gagal memuat data pesanan.", "error"); } finally { hideLoading(); } }
-    $('#orderForm').addEventListener('submit', async function(e) { e.preventDefault(); if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } if (!validateForm('orderForm')) { showToast("Harap perbaiki error form.", "error"); this.querySelector('.invalid')?.focus(); return; } const newOrderData = { clientName: $('#clientName').value.trim(), clientContact: $('#clientContact').value.trim(), projectType: $('#projectType').value, projectPrice: parseFloat($('#projectPrice').value) || 0, orderDate: $('#orderDate').value, deadline: $('#deadline').value, priority: $('#priority').value, attachmentLink: $('#attachmentLink').value.trim(), projectTags: parseTags($('#projectTags').value), notes: $('#notes').value.trim(), status: "Pending", isArchived: false, }; showLoading(); try { const docRef = await ordersCollection.add(newOrderData); console.log("Document written with ID: ", docRef.id); orders.unshift({ ...newOrderData, firestoreId: docRef.id }); this.reset(); $$('#orderForm .error-message').forEach(el => el.style.display = 'none'); $$('#orderForm .invalid').forEach(el => el.classList.remove('invalid')); showToast("Pesanan berhasil ditambahkan!", "success"); currentPage = 1; populateReportProjectTypeFilter(); showSection('listSection'); } catch (error) { console.error("Error adding document: ", error); showToast("Gagal menambahkan pesanan.", "error"); } finally { hideLoading(); } });
-    async function updateStatus(firestoreId, newStatus) { if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } showLoading(); try { const docRef = ordersCollection.doc(firestoreId); await docRef.update({ status: newStatus }); const index = orders.findIndex(o => o.firestoreId === firestoreId); if (index !== -1) orders[index].status = newStatus; applyFilterAndSort(); showToast("Status diperbarui.", "info"); } catch (error) { console.error("Error updating status: ", error); showToast("Gagal memperbarui status.", "error"); } finally { hideLoading(); } }
-    async function updatePriority(firestoreId, newPriority) { if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } showLoading(); try { const docRef = ordersCollection.doc(firestoreId); await docRef.update({ priority: newPriority }); const index = orders.findIndex(o => o.firestoreId === firestoreId); if (index !== -1) orders[index].priority = newPriority; applyFilterAndSort(); showToast("Prioritas diperbarui.", "info"); } catch (error) { console.error("Error updating priority: ", error); showToast("Gagal memperbarui prioritas.", "error"); } finally { hideLoading(); } }
-    async function archiveOrder(firestoreId) { if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } const order = orders.find(o => o.firestoreId === firestoreId); if (!order) return; if (confirm(`Arsipkan pesanan "${order.clientName}"?`)) { showLoading(); try { const docRef = ordersCollection.doc(firestoreId); await docRef.update({ isArchived: true }); order.isArchived = true; applyFilterAndSort(); showToast(`Pesanan "${order.clientName}" diarsipkan.`, "info"); } catch (error) { console.error("Error archiving order: ", error); showToast("Gagal mengarsipkan pesanan.", "error"); } finally { hideLoading(); } } }
-    async function unarchiveOrder(firestoreId) { if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } showLoading(); try { const docRef = ordersCollection.doc(firestoreId); await docRef.update({ isArchived: false }); const order = orders.find(o => o.firestoreId === firestoreId); if (order) order.isArchived = false; applyFilterAndSort(); showToast(`Pesanan dipulihkan.`, "info"); } catch (error) { console.error("Error unarchiving order: ", error); showToast("Gagal memulihkan pesanan.", "error"); } finally { hideLoading(); } }
-    async function deleteOrderPermanently(firestoreId) { // Handles both active and archived
-        if (!db) { showToast("Koneksi Database Gagal!", "error"); return; }
-        const orderIndex = orders.findIndex(o => o.firestoreId === firestoreId);
-        if (orderIndex === -1) return;
+    // --- DATA MANAGEMENT (SUPABASE) ---
+    async function loadData() {
+        if (!supabase) { console.error("loadData called before Supabase client was initialized."); showToast("Koneksi Database Gagal!", "error"); return; }
+        showLoading();
+        orders = [];
+        try {
+            const { data, error } = await supabase.from('orders').select('*').order('orderDate', { ascending: false }).order('clientName', { ascending: true });
+            if (error) { console.error("Error loading orders:", error); throw new Error(`Supabase error: ${error.message}`); }
+            orders = data || [];
+            console.log(`Loaded ${orders.length} orders from Supabase.`);
+            itemsPerPage = parseInt(localStorage.getItem('itemsPerPage') || '15', 10);
+            $('#itemsPerPageSelect').value = itemsPerPage;
+            populateReportProjectTypeFilter();
+            applyFilterAndSort();
+            updateDashboard();
+        } catch (error) { console.error("Error in loadData function: ", error); showToast(`Gagal memuat data pesanan: ${error.message}`, "error");
+        } finally { hideLoading(); }
+    }
+
+    $('#orderForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        if (!supabase) { showToast("Koneksi Database Gagal!", "error"); return; }
+        if (!validateForm('orderForm')) { showToast("Harap perbaiki error form.", "error"); this.querySelector('.invalid')?.focus(); return; }
+        const newOrderData = { clientName: $('#clientName').value.trim(), clientContact: $('#clientContact').value.trim() || null, projectType: $('#projectType').value, projectPrice: parseFloat($('#projectPrice').value) || 0, orderDate: $('#orderDate').value, deadline: $('#deadline').value, priority: $('#priority').value, attachmentLink: $('#attachmentLink').value.trim() || null, projectTags: parseTags($('#projectTags').value), notes: $('#notes').value.trim() || null, status: "Pending", isArchived: false, };
+        showLoading();
+        try {
+            const { data: insertedOrder, error } = await supabase.from('orders').insert(newOrderData).select().single();
+            if (error) { console.error("Error adding order:", error); throw new Error(`Supabase error: ${error.message}`); }
+            if (insertedOrder) { console.log("Document written with ID: ", insertedOrder.id); orders.unshift(insertedOrder); this.reset(); $$('#orderForm .error-message').forEach(el => el.style.display = 'none'); $$('#orderForm .invalid').forEach(el => el.classList.remove('invalid')); showToast("Pesanan berhasil ditambahkan!", "success"); currentPage = 1; populateReportProjectTypeFilter(); showSection('listSection');
+            } else { throw new Error("Insert successful, but no data returned."); }
+        } catch (error) { console.error("Error adding document: ", error); showToast(`Gagal menambahkan pesanan: ${error.message}`, "error");
+        } finally { hideLoading(); }
+    });
+
+    async function updateStatus(id, newStatus) {
+        if (!supabase) { showToast("Koneksi Database Gagal!", "error"); return; }
+        showLoading();
+        try {
+            const { error } = await supabase.from('orders').update({ status: newStatus }).eq('id', id);
+            if (error) { console.error("Error updating status:", error); throw new Error(`Supabase error: ${error.message}`); }
+            const index = orders.findIndex(o => o.id === id); if (index !== -1) { orders[index].status = newStatus; }
+            applyFilterAndSort(); showToast("Status diperbarui.", "info");
+        } catch (error) { console.error("Error updating status function: ", error); showToast(`Gagal memperbarui status: ${error.message}`, "error");
+        } finally { hideLoading(); }
+    }
+
+    async function updatePriority(id, newPriority) {
+        if (!supabase) { showToast("Koneksi Database Gagal!", "error"); return; }
+        showLoading();
+        try {
+            const { error } = await supabase.from('orders').update({ priority: newPriority }).eq('id', id);
+             if (error) { console.error("Error updating priority:", error); throw new Error(`Supabase error: ${error.message}`); }
+            const index = orders.findIndex(o => o.id === id); if (index !== -1) { orders[index].priority = newPriority; }
+            applyFilterAndSort(); showToast("Prioritas diperbarui.", "info");
+        } catch (error) { console.error("Error updating priority function: ", error); showToast(`Gagal memperbarui prioritas: ${error.message}`, "error");
+        } finally { hideLoading(); }
+    }
+
+    async function archiveOrder(id) {
+        if (!supabase) { showToast("Koneksi Database Gagal!", "error"); return; }
+        const order = orders.find(o => o.id === id); if (!order) return;
+        if (confirm(`Arsipkan pesanan "${order.clientName}"?`)) {
+            showLoading();
+            try {
+                const { error } = await supabase.from('orders').update({ isArchived: true }).eq('id', id);
+                if (error) { console.error("Error archiving order:", error); throw new Error(`Supabase error: ${error.message}`); }
+                order.isArchived = true; applyFilterAndSort(); showToast(`Pesanan "${order.clientName}" diarsipkan.`, "info");
+            } catch (error) { console.error("Error archiving order function: ", error); showToast(`Gagal mengarsipkan pesanan: ${error.message}`, "error");
+            } finally { hideLoading(); }
+        }
+    }
+
+    async function unarchiveOrder(id) {
+        if (!supabase) { showToast("Koneksi Database Gagal!", "error"); return; }
+        showLoading();
+        try {
+            const { error } = await supabase.from('orders').update({ isArchived: false }).eq('id', id);
+             if (error) { console.error("Error unarchiving order:", error); throw new Error(`Supabase error: ${error.message}`); }
+            const order = orders.find(o => o.id === id); if (order) { order.isArchived = false; }
+            applyFilterAndSort(); showToast(`Pesanan dipulihkan.`, "info");
+        } catch (error) { console.error("Error unarchiving order function: ", error); showToast(`Gagal memulihkan pesanan: ${error.message}`, "error");
+        } finally { hideLoading(); }
+    }
+
+    async function deleteOrderPermanently(id) {
+        if (!supabase) { showToast("Koneksi Database Gagal!", "error"); return; }
+        const orderIndex = orders.findIndex(o => o.id === id); if (orderIndex === -1) return;
         const orderToDelete = orders[orderIndex];
         const confirmationMsg = `HAPUS PERMANEN pesanan "${orderToDelete.clientName}"? (${orderToDelete.isArchived ? 'Arsip' : 'Aktif'}) Tindakan ini tidak bisa dibatalkan.`;
         if (confirm(confirmationMsg)) {
             showLoading();
             try {
-                const docRef = ordersCollection.doc(firestoreId);
-                await docRef.delete();
-                orders.splice(orderIndex, 1);
-                applyFilterAndSort();
-                showToast("Pesanan dihapus permanen.", "success");
-            } catch (error) {
-                console.error("Error deleting order: ", error);
-                showToast("Gagal menghapus pesanan.", "error");
-            } finally {
-                hideLoading();
-            }
+                const { error } = await supabase.from('orders').delete().eq('id', id);
+                if (error) { console.error("Error deleting order:", error); throw new Error(`Supabase error: ${error.message}`); }
+                orders.splice(orderIndex, 1); selectedOrderIds.delete(id);
+                applyFilterAndSort(); showToast("Pesanan dihapus permanen.", "success");
+            } catch (error) { console.error("Error deleting order function: ", error); showToast(`Gagal menghapus pesanan: ${error.message}`, "error");
+            } finally { hideLoading(); }
         }
     }
-    function duplicateOrder(firestoreId) { const order = orders.find(o => o.firestoreId === firestoreId); if (!order) return; showSection('inputSection'); $('#clientName').value = order.clientName; $('#clientContact').value = order.clientContact || ''; $('#projectType').value = order.projectType; $('#projectPrice').value = order.projectPrice || ''; $('#orderDate').value = ''; $('#deadline').value = ''; $('#priority').value = order.priority; $('#attachmentLink').value = order.attachmentLink || ''; $('#projectTags').value = (order.projectTags || []).join(', '); $('#notes').value = order.notes || ''; $$('#orderForm .error-message').forEach(el => el.style.display = 'none'); $$('#orderForm .invalid').forEach(el => el.classList.remove('invalid')); $('#clientName').focus(); showToast("Form diisi u/ duplikasi. Isi tanggal.", "info"); }
-    async function requestRevision(firestoreId) { if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } const index = orders.findIndex(order => order.firestoreId === firestoreId); if (index === -1) return; const order = orders[index]; if (order.status !== 'Completed' || order.isArchived) { showToast("Revisi hanya bisa untuk status 'Completed' yg belum diarsip.", "warning"); return; } if (confirm(`Kembalikan status pesanan "${order.clientName}" ke 'In Progress' untuk revisi?`)) { showLoading(); const timestamp = new Date().toLocaleString('id-ID'); const updatedNotes = (order.notes || '') + `\n\n-- Revisi diminta pada ${timestamp} --`; try { const docRef = ordersCollection.doc(firestoreId); await docRef.update({ status: 'In Progress', notes: updatedNotes }); orders[index].status = 'In Progress'; orders[index].notes = updatedNotes; applyFilterAndSort(); showToast(`Pesanan "${order.clientName}" dikembalikan ke In Progress.`, "success"); } catch (error) { console.error("Error requesting revision: ", error); showToast("Gagal meminta revisi.", "error"); } finally { hideLoading(); } } }
+
+    function duplicateOrder(id) {
+        const order = orders.find(o => o.id === id); if (!order) return;
+        showSection('inputSection'); $('#clientName').value = order.clientName; $('#clientContact').value = order.clientContact || ''; $('#projectType').value = order.projectType; $('#projectPrice').value = order.projectPrice || ''; $('#orderDate').value = ''; $('#deadline').value = ''; $('#priority').value = order.priority; $('#attachmentLink').value = order.attachmentLink || ''; $('#projectTags').value = (order.projectTags || []).join(', '); $('#notes').value = order.notes || '';
+        $$('#orderForm .error-message').forEach(el => el.style.display = 'none'); $$('#orderForm .invalid').forEach(el => el.classList.remove('invalid'));
+        $('#clientName').focus(); showToast("Form diisi u/ duplikasi. Isi tanggal.", "info");
+    }
+
+    async function requestRevision(id) {
+        if (!supabase) { showToast("Koneksi Database Gagal!", "error"); return; }
+        const index = orders.findIndex(order => order.id === id); if (index === -1) return;
+        const order = orders[index]; if (order.status !== 'Completed' || order.isArchived) { showToast("Revisi hanya bisa untuk status 'Completed' yg belum diarsip.", "warning"); return; }
+        if (confirm(`Kembalikan status pesanan "${order.clientName}" ke 'In Progress' untuk revisi?`)) {
+            showLoading(); const timestamp = new Date().toLocaleString('id-ID'); const updatedNotes = (order.notes || '') + `\n\n-- Revisi diminta pada ${timestamp} --`;
+            try {
+                const { error } = await supabase.from('orders').update({ status: 'In Progress', notes: updatedNotes }).eq('id', id);
+                if (error) { console.error("Error requesting revision:", error); throw new Error(`Supabase error: ${error.message}`); }
+                orders[index].status = 'In Progress'; orders[index].notes = updatedNotes;
+                applyFilterAndSort(); showToast(`Pesanan "${order.clientName}" dikembalikan ke In Progress.`, "success");
+            } catch (error) { console.error("Error requesting revision function: ", error); showToast(`Gagal meminta revisi: ${error.message}`, "error");
+            } finally { hideLoading(); }
+        }
+    }
+
     const editModal = $('#editModal'); const editForm = $('#editForm');
-    function openEditModal(firestoreId) { const order = orders.find(o => o.firestoreId === firestoreId); if (!order) return; $('#editId').value = order.firestoreId; $('#editClientName').value = order.clientName; $('#editClientContact').value = order.clientContact || ''; $('#editProjectType').value = order.projectType; $('#editProjectPrice').value = order.projectPrice || ''; $('#editOrderDate').value = order.orderDate; $('#editDeadline').value = order.deadline; $('#editPriority').value = order.priority; $('#editStatus').value = order.status; $('#editAttachmentLink').value = order.attachmentLink || ''; $('#editProjectTags').value = (order.projectTags || []).join(', '); $('#editNotes').value = order.notes || ''; $$('#editForm .error-message').forEach(el => el.style.display = 'none'); $$('#editForm .invalid').forEach(el => el.classList.remove('invalid')); editModal.style.display = "block"; $('#editClientName').focus(); }
+    function openEditModal(id) {
+        const order = orders.find(o => o.id === id); if (!order) return;
+        $('#editId').value = order.id; $('#editClientName').value = order.clientName; $('#editClientContact').value = order.clientContact || ''; $('#editProjectType').value = order.projectType; $('#editProjectPrice').value = order.projectPrice || ''; $('#editOrderDate').value = order.orderDate; $('#editDeadline').value = order.deadline; $('#editPriority').value = order.priority; $('#editStatus').value = order.status; $('#editAttachmentLink').value = order.attachmentLink || ''; $('#editProjectTags').value = (order.projectTags || []).join(', '); $('#editNotes').value = order.notes || '';
+        $$('#editForm .error-message').forEach(el => el.style.display = 'none'); $$('#editForm .invalid').forEach(el => el.classList.remove('invalid'));
+        editModal.style.display = "block"; $('#editClientName').focus();
+    }
     function closeEditModal() { editModal.style.display = "none"; editForm.reset(); }
-    editForm.addEventListener("submit", async function(e) { e.preventDefault(); if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } if (!validateForm('editForm')) { showToast("Perbaiki error form edit.", "error"); this.querySelector('.invalid')?.focus(); return; } const firestoreId = $('#editId').value; if (!firestoreId) { showToast("ID Pesanan tidak valid.", "error"); return; } const updatedData = { clientName: $('#editClientName').value.trim(), clientContact: $('#editClientContact').value.trim(), projectType: $('#editProjectType').value, projectPrice: parseFloat($('#editProjectPrice').value) || 0, orderDate: $('#editOrderDate').value, deadline: $('#editDeadline').value, priority: $('#editPriority').value, status: $('#editStatus').value, attachmentLink: $('#editAttachmentLink').value.trim(), projectTags: parseTags($('#editProjectTags').value), notes: $('#editNotes').value.trim(), }; showLoading(); try { const docRef = ordersCollection.doc(firestoreId); await docRef.update(updatedData); const index = orders.findIndex(o => o.firestoreId === firestoreId); if (index !== -1) { orders[index] = { ...orders[index], ...updatedData }; } closeEditModal(); applyFilterAndSort(); showToast("Pesanan berhasil diperbarui!", "success"); } catch (error) { console.error("Error updating document: ", error); showToast("Gagal memperbarui pesanan.", "error"); } finally { hideLoading(); } });
-    window.onclick = (event) => { if (event.target == editModal) closeEditModal(); /* Close modal on overlay click */ }
-    window.addEventListener('keydown', (event) => { if (event.key === 'Escape') { if (editModal.style.display === "block") closeEditModal(); } }); // Removed dropdown close
+    editForm.addEventListener("submit", async function(e) {
+        e.preventDefault(); if (!supabase) { showToast("Koneksi Database Gagal!", "error"); return; }
+        if (!validateForm('editForm')) { showToast("Perbaiki error form edit.", "error"); this.querySelector('.invalid')?.focus(); return; }
+        const id = $('#editId').value; if (!id) { showToast("ID Pesanan tidak valid.", "error"); return; }
+        const updatedData = { clientName: $('#editClientName').value.trim(), clientContact: $('#editClientContact').value.trim() || null, projectType: $('#editProjectType').value, projectPrice: parseFloat($('#editProjectPrice').value) || 0, orderDate: $('#editOrderDate').value, deadline: $('#editDeadline').value, priority: $('#editPriority').value, status: $('#editStatus').value, attachmentLink: $('#editAttachmentLink').value.trim() || null, projectTags: parseTags($('#editProjectTags').value), notes: $('#editNotes').value.trim() || null, };
+        showLoading();
+        try {
+            const { error } = await supabase.from('orders').update(updatedData).eq('id', id);
+            if (error) { console.error("Error updating order:", error); throw new Error(`Supabase error: ${error.message}`); }
+            const index = orders.findIndex(o => o.id === id); if (index !== -1) { orders[index] = { ...orders[index], ...updatedData }; }
+            closeEditModal(); applyFilterAndSort(); showToast("Pesanan berhasil diperbarui!", "success");
+        } catch (error) { console.error("Error updating document function: ", error); showToast(`Gagal memperbarui pesanan: ${error.message}`, "error");
+        } finally { hideLoading(); }
+    });
+    window.onclick = (event) => { if (event.target == editModal) closeEditModal(); }
+    window.addEventListener('keydown', (event) => { if (event.key === 'Escape') { if (editModal.style.display === "block") closeEditModal(); } });
 
     // --- FILTER, SORT, & PAGINATION ---
     $('#searchInput').addEventListener('input', () => debounce(resetAndFilter)); $('#statusFilter').addEventListener('change', resetAndFilter); $('#priorityFilter').addEventListener('change', resetAndFilter); $('#tagFilter').addEventListener('input', () => debounce(resetAndFilter)); $('#startDateFilter').addEventListener('change', resetAndFilter); $('#endDateFilter').addEventListener('change', resetAndFilter); $('#showArchived').addEventListener('change', resetAndFilter);
     $('#itemsPerPageSelect').addEventListener('change', (e) => { itemsPerPage = parseInt(e.target.value, 10); localStorage.setItem('itemsPerPage', itemsPerPage); resetAndFilter(); });
-    $('#prevPageBtn').addEventListener('click', () => { if (currentPage > 1) { currentPage--; applyFilterAndSort(); } }); $('#nextPageBtn').addEventListener('click', () => { const totalItems = filterOrders().length; const totalPages = Math.ceil(totalItems / itemsPerPage); if (currentPage < totalPages) { currentPage++; applyFilterAndSort(); } });
+    $('#prevPageBtn').addEventListener('click', () => { if (currentPage > 1) { currentPage--; applyFilterAndSort(); } });
+    $('#nextPageBtn').addEventListener('click', () => { const totalItems = filterOrders().length; const totalPages = Math.ceil(totalItems / itemsPerPage); if (currentPage < totalPages) { currentPage++; applyFilterAndSort(); } });
     function resetAndFilter() { currentPage = 1; applyFilterAndSort(); }
-    function filterOrders() { const searchValue = $('#searchInput').value.toLowerCase(); const statusValue = $('#statusFilter').value; const priorityValue = $('#priorityFilter').value; const tagValue = $('#tagFilter').value.toLowerCase().trim(); const showArchived = $('#showArchived').checked; const startDateValue = $('#startDateFilter').value; const endDateValue = $('#endDateFilter').value; return orders.filter(order => { const isOrderArchived = order.isArchived === true; if (showArchived !== isOrderArchived) return false; const matchStatus = !statusValue || order.status === statusValue; const matchPriority = !priorityValue || order.priority === priorityValue; const matchTag = !tagValue || (order.projectTags && order.projectTags.some(tag => tag.toLowerCase().includes(tagValue))); const matchSearch = !searchValue || ( order.clientName.toLowerCase().includes(searchValue) || (order.clientContact && order.clientContact.toLowerCase().includes(searchValue)) || order.projectType.toLowerCase().includes(searchValue) || (order.notes && order.notes.toLowerCase().includes(searchValue)) || (order.projectTags && order.projectTags.some(tag => tag.toLowerCase().includes(searchValue))) ); let matchDate = true; if (startDateValue && order.orderDate < startDateValue) matchDate = false; if (endDateValue && order.orderDate > endDateValue) matchDate = false; return matchStatus && matchPriority && matchTag && matchSearch && matchDate; }); }
-    function applyFilterAndSort() { const filtered = filterOrders(); const priorityOrder = { High: 3, Medium: 2, Low: 1 }; filtered.sort((a, b) => { const col = currentSort.column; const dir = currentSort.direction === 'asc' ? 1 : -1; let valA = a[col]; let valB = b[col]; if (col === 'priority') { valA = priorityOrder[valA] || 0; valB = priorityOrder[valB] || 0; } else if (col === 'projectPrice') { valA = Number(valA) || 0; valB = Number(valB) || 0; } else if (col === 'orderDate' || col === 'deadline') { valA = valA || ''; valB = valB || ''; } else { valA = String(valA || '').toLowerCase(); valB = String(valB || '').toLowerCase(); } if (valA < valB) return -1 * dir; if (valA > valB) return 1 * dir; const idA = a.firestoreId || ''; const idB = b.firestoreId || ''; if (idA < idB) return -1; if (idA > idB) return 1; return 0; }); const totalItems = filtered.length; const totalPages = Math.ceil(totalItems / itemsPerPage) || 1; currentPage = Math.max(1, Math.min(currentPage, totalPages)); const startIndex = (currentPage - 1) * itemsPerPage; const endIndex = startIndex + itemsPerPage; const paginatedItems = filtered.slice(startIndex, endIndex); updateSortIndicators(); renderTable(paginatedItems); renderPaginationControls(currentPage, totalPages, totalItems); updateBulkActionUI(); }
-    function setSort(column) { if (currentSort.column === column) currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc'; else { currentSort.column = column; currentSort.direction = 'asc'; } currentPage = 1; applyFilterAndSort(); }
+    function filterOrders() {
+        const searchValue = $('#searchInput').value.toLowerCase(); const statusValue = $('#statusFilter').value; const priorityValue = $('#priorityFilter').value; const tagValue = $('#tagFilter').value.toLowerCase().trim(); const showArchived = $('#showArchived').checked; const startDateValue = $('#startDateFilter').value; const endDateValue = $('#endDateFilter').value;
+        return orders.filter(order => {
+            const orderTags = Array.isArray(order.projectTags) ? order.projectTags : []; const isOrderArchived = order.isArchived === true; if (showArchived !== isOrderArchived) return false;
+            const matchStatus = !statusValue || order.status === statusValue; const matchPriority = !priorityValue || order.priority === priorityValue; const matchTag = !tagValue || orderTags.some(tag => tag.toLowerCase().includes(tagValue));
+            const matchSearch = !searchValue || ( order.clientName.toLowerCase().includes(searchValue) || (order.clientContact && order.clientContact.toLowerCase().includes(searchValue)) || order.projectType.toLowerCase().includes(searchValue) || (order.notes && order.notes.toLowerCase().includes(searchValue)) || (orderTags.some(tag => tag.toLowerCase().includes(searchValue))) );
+            let matchDate = true; if (startDateValue && order.orderDate < startDateValue) matchDate = false; if (endDateValue && order.orderDate > endDateValue) matchDate = false;
+            return matchStatus && matchPriority && matchTag && matchSearch && matchDate;
+        });
+    }
+    function applyFilterAndSort() {
+        const filtered = filterOrders(); const priorityOrder = { High: 3, Medium: 2, Low: 1 };
+        filtered.sort((a, b) => {
+            const col = currentSort.column; const dir = currentSort.direction === 'asc' ? 1 : -1; let valA = a[col]; let valB = b[col];
+            if (col === 'priority') { valA = priorityOrder[valA] || 0; valB = priorityOrder[valB] || 0; } else if (col === 'projectPrice') { valA = Number(valA) || 0; valB = Number(valB) || 0; } else if (col === 'orderDate' || col === 'deadline') { valA = valA || ''; valB = valB || ''; } else { valA = String(valA || '').toLowerCase(); valB = String(valB || '').toLowerCase(); }
+            if (valA < valB) return -1 * dir; if (valA > valB) return 1 * dir;
+            const idA = a.id || ''; const idB = b.id || ''; if (idA < idB) return -1; if (idA > idB) return 1; return 0;
+        });
+        const totalItems = filtered.length; const totalPages = Math.ceil(totalItems / itemsPerPage) || 1; currentPage = Math.max(1, Math.min(currentPage, totalPages)); const startIndex = (currentPage - 1) * itemsPerPage; const endIndex = startIndex + itemsPerPage; const paginatedItems = filtered.slice(startIndex, endIndex);
+        updateSortIndicators(); renderTable(paginatedItems); renderPaginationControls(currentPage, totalPages, totalItems); updateBulkActionUI();
+    }
+    function setSort(column) { if (currentSort.column === column) { currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc'; } else { currentSort.column = column; currentSort.direction = 'asc'; } currentPage = 1; applyFilterAndSort(); }
     function updateSortIndicators() { $$('th.th-sorted').forEach(th => th.classList.remove('th-sorted')); $$('th .sort-indicator').forEach(indicator => { indicator.textContent = ''; indicator.classList.remove('active'); }); const currentTh = $(`th[onclick*="setSort('${currentSort.column}')"]`); if (currentTh) { currentTh.classList.add('th-sorted'); const indicator = currentTh.querySelector('.sort-indicator'); if (indicator) { indicator.textContent = currentSort.direction === 'asc' ? ' ▲' : ' ▼'; indicator.classList.add('active'); } } }
-    function renderPaginationControls(page, totalPages, totalItems) { const pageInfo = $('#pageInfo'); const prevBtn = $('#prevPageBtn'); const nextBtn = $('#nextPageBtn'); if (totalItems === 0) pageInfo.textContent = "Tidak ada data"; else { const startItem = (page - 1) * itemsPerPage + 1; const endItem = Math.min(startItem + itemsPerPage - 1, totalItems); pageInfo.textContent = `Menampilkan ${startItem}-${endItem} dari ${totalItems} | Hal ${page} dari ${totalPages}`; } prevBtn.disabled = page <= 1; nextBtn.disabled = page >= totalPages; $('#paginationControls').style.display = totalItems > 0 ? 'flex' : 'none'; }
+    function renderPaginationControls(page, totalPages, totalItems) { const pageInfo = $('#pageInfo'); const prevBtn = $('#prevPageBtn'); const nextBtn = $('#nextPageBtn'); if (totalItems === 0) { pageInfo.textContent = "Tidak ada data"; } else { const startItem = (page - 1) * itemsPerPage + 1; const endItem = Math.min(startItem + itemsPerPage - 1, totalItems); pageInfo.textContent = `Menampilkan ${startItem}-${endItem} dari ${totalItems} | Hal ${page} dari ${totalPages}`; } prevBtn.disabled = page <= 1; nextBtn.disabled = page >= totalPages; $('#paginationControls').style.display = totalItems > 0 ? 'flex' : 'none'; }
 
     // --- RENDERING ---
     function renderTable(ordersToRender) {
@@ -430,89 +591,84 @@
         if (ordersToRender.length === 0) { noOrdersMsg.style.display = 'block'; tbody.closest('table').style.display = 'none'; updateBulkActionUI(); return; }
         noOrdersMsg.style.display = 'none'; tbody.closest('table').style.display = ''; const today = new Date(); today.setHours(0,0,0,0); const fragment = document.createDocumentFragment();
         ordersToRender.forEach(order => {
-            const tr = document.createElement("tr"); tr.dataset.orderId = order.firestoreId;
-            if (order.isArchived) tr.classList.add('archived'); if (selectedOrderIds.has(order.firestoreId)) tr.classList.add('selected');
+            const tr = document.createElement("tr"); tr.dataset.orderId = order.id; if (order.isArchived) tr.classList.add('archived'); if (selectedOrderIds.has(order.id)) tr.classList.add('selected');
             let deadlineText = formatDate(order.deadline); let deadlineClass = '';
-            if (order.deadline && !order.isArchived && order.status !== "Completed" && order.status !== "Delivered") { const deadlineDate = new Date(order.deadline + 'T00:00:00'); if (!isNaN(deadlineDate.getTime())) { deadlineDate.setHours(0,0,0,0); const diffTime = deadlineDate - today; const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); if (diffDays < 0) { deadlineText += ` <span style="font-weight: bold;">(Lewat ${Math.abs(diffDays)} hr)</span>`; deadlineClass = 'deadline-past'; } else if (diffDays <= 3) { deadlineText += ` <span style="font-weight: bold;">(${diffDays} hr lagi)</span>`; deadlineClass = 'deadline-soon'; } else { deadlineText += ` <span>(${diffDays} hr lagi)</span>`; } if (deadlineClass) tr.classList.add(deadlineClass); } }
-            const prioritySelectHtml = `<select class="inline-priority-select" onchange="updatePriority('${order.firestoreId}', this.value)" ${order.isArchived ? 'disabled' : ''} title="Ubah Prioritas"> <option value="Low" ${order.priority === "Low" ? "selected" : ""}>Rendah</option> <option value="Medium" ${order.priority === "Medium" ? "selected" : ""}>Sedang</option> <option value="High" ${order.priority === "High" ? "selected" : ""}>Tinggi</option> </select>`;
-            const tagsHtml = (order.projectTags && order.projectTags.length > 0) ? order.projectTags.map(tag => `<span class="tag-badge" title="${tag}">${tag.length > 15 ? tag.substring(0, 13)+'...' : tag}</span>`).join('') : '-';
+            if (order.deadline && !order.isArchived && order.status !== "Completed" && order.status !== "Delivered") { try { const deadlineDate = new Date(order.deadline + 'T00:00:00'); if (!isNaN(deadlineDate.getTime())) { deadlineDate.setHours(0,0,0,0); const diffTime = deadlineDate - today; const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); if (diffDays < 0) { deadlineText += ` <span style="font-weight: bold;">(Lewat ${Math.abs(diffDays)} hr)</span>`; deadlineClass = 'deadline-past'; } else if (diffDays <= 3) { deadlineText += ` <span style="font-weight: bold;">(${diffDays} hr lagi)</span>`; deadlineClass = 'deadline-soon'; } else { deadlineText += ` <span>(${diffDays} hr lagi)</span>`; } if (deadlineClass) tr.classList.add(deadlineClass); } } catch (e) { console.warn("Error parsing deadline:", order.deadline, e)} }
+            const prioritySelectHtml = `<select class="inline-priority-select" onchange="updatePriority('${order.id}', this.value)" ${order.isArchived ? 'disabled' : ''} title="Ubah Prioritas"><option value="Low" ${order.priority === "Low" ? "selected" : ""}>Rendah</option><option value="Medium" ${order.priority === "Medium" ? "selected" : ""}>Sedang</option><option value="High" ${order.priority === "High" ? "selected" : ""}>Tinggi</option></select>`;
+            const orderTags = Array.isArray(order.projectTags) ? order.projectTags : []; const tagsHtml = orderTags.length > 0 ? orderTags.map(tag => `<span class="tag-badge" title="${tag}">${tag.length > 15 ? tag.substring(0, 13)+'...' : tag}</span>`).join('') : '-';
             const linkHtml = order.attachmentLink ? `<a href="${sanitizeUrl(order.attachmentLink)}" target="_blank" rel="noopener noreferrer" title="${order.attachmentLink}">Link <span class="link-icon">🔗</span></a>` : '-';
-            // --- ACTION BUTTONS (DIRECTLY VISIBLE) ---
             let actionButtonsHtml = '';
-            if (order.isArchived) {
-                actionButtonsHtml = `<button class="secondary action-button" onclick="unarchiveOrder('${order.firestoreId}')" title="Pulihkan"><span>⤴️</span></button> <button class="danger action-button" onclick="deleteOrderPermanently('${order.firestoreId}')" title="Hapus Permanen"><span>🗑️</span></button>`;
-            } else if (order.status === 'Completed') {
-                actionButtonsHtml = `<button class="secondary action-button" onclick="openEditModal('${order.firestoreId}')" title="Edit"><span>✏️</span></button> <button class="revision action-button" onclick="requestRevision('${order.firestoreId}')" title="Minta Revisi"><span>🔄</span></button> <button class="info action-button" onclick="duplicateOrder('${order.firestoreId}')" title="Duplikasi"><span>➕</span></button> <button class="warning action-button" onclick="archiveOrder('${order.firestoreId}')" title="Arsipkan"><span>📁</span></button> <button class="danger action-button" onclick="deleteOrderPermanently('${order.firestoreId}')" title="Hapus"><span>🗑️</span></button>`;
-            } else if (order.status === 'Delivered') {
-                 actionButtonsHtml = `<button class="secondary action-button" onclick="openEditModal('${order.firestoreId}')" title="Edit"><span>✏️</span></button> <button class="info action-button" onclick="duplicateOrder('${order.firestoreId}')" title="Duplikasi"><span>➕</span></button> <button class="warning action-button" onclick="archiveOrder('${order.firestoreId}')" title="Arsipkan"><span>📁</span></button> <button class="danger action-button" onclick="deleteOrderPermanently('${order.firestoreId}')" title="Hapus"><span>🗑️</span></button>`;
-            } else { // Pending or In Progress
-                 actionButtonsHtml = `<button class="secondary action-button" onclick="openEditModal('${order.firestoreId}')" title="Edit"><span>✏️</span></button> <button class="info action-button" onclick="duplicateOrder('${order.firestoreId}')" title="Duplikasi"><span>➕</span></button> <button class="warning action-button" onclick="archiveOrder('${order.firestoreId}')" title="Arsipkan"><span>📁</span></button> <button class="danger action-button" onclick="deleteOrderPermanently('${order.firestoreId}')" title="Hapus"><span>🗑️</span></button>`;
-            }
+             if (order.isArchived) { actionButtonsHtml = `<button class="secondary action-button" onclick="unarchiveOrder('${order.id}')" title="Pulihkan"><span>⤴️</span></button><button class="danger action-button" onclick="deleteOrderPermanently('${order.id}')" title="Hapus Permanen"><span>🗑️</span></button>`;
+             } else if (order.status === 'Completed') { actionButtonsHtml = `<button class="secondary action-button" onclick="openEditModal('${order.id}')" title="Edit"><span>✏️</span></button><button class="revision action-button" onclick="requestRevision('${order.id}')" title="Minta Revisi"><span>🔄</span></button><button class="info action-button" onclick="duplicateOrder('${order.id}')" title="Duplikasi"><span>➕</span></button><button class="warning action-button" onclick="archiveOrder('${order.id}')" title="Arsipkan"><span>📁</span></button><button class="danger action-button" onclick="deleteOrderPermanently('${order.id}')" title="Hapus"><span>🗑️</span></button>`;
+             } else if (order.status === 'Delivered') { actionButtonsHtml = `<button class="secondary action-button" onclick="openEditModal('${order.id}')" title="Edit"><span>✏️</span></button><button class="info action-button" onclick="duplicateOrder('${order.id}')" title="Duplikasi"><span>➕</span></button><button class="warning action-button" onclick="archiveOrder('${order.id}')" title="Arsipkan"><span>📁</span></button><button class="danger action-button" onclick="deleteOrderPermanently('${order.id}')" title="Hapus"><span>🗑️</span></button>`;
+             } else { actionButtonsHtml = `<button class="secondary action-button" onclick="openEditModal('${order.id}')" title="Edit"><span>✏️</span></button><button class="info action-button" onclick="duplicateOrder('${order.id}')" title="Duplikasi"><span>➕</span></button><button class="warning action-button" onclick="archiveOrder('${order.id}')" title="Arsipkan"><span>📁</span></button><button class="danger action-button" onclick="deleteOrderPermanently('${order.id}')" title="Hapus"><span>🗑️</span></button>`; }
             const notesDisplay = (order.notes || '-').substring(0, 40); const notesEllipsis = order.notes && order.notes.length > 40 ? '...' : ''; const notesTitle = order.notes || 'Tidak ada catatan';
             const contactDisplay = (order.clientContact || '-').substring(0, 20); const contactEllipsis = order.clientContact && order.clientContact.length > 20 ? '...' : ''; const contactTitle = order.clientContact || 'Tidak ada kontak';
-            tr.innerHTML = `
-                <td class="col-checkbox"><input type="checkbox" class="row-checkbox" data-id="${order.firestoreId}" ${selectedOrderIds.has(order.firestoreId) ? 'checked' : ''} aria-label="Pilih ${order.clientName}"></td>
-                <td data-label="Klien">${order.clientName}</td> <td data-label="Kontak" title="${contactTitle}">${contactDisplay}${contactEllipsis}</td>
-                <td data-label="Project">${order.projectType}</td> <td data-label="Harga" class="col-price">${formatCurrency(order.projectPrice)}</td>
-                <td data-label="Order">${formatDate(order.orderDate)}</td> <td data-label="Deadline">${deadlineText}</td>
-                <td data-label="Prioritas" class="text-center">${prioritySelectHtml}</td>
-                <td data-label="Status"> <select class="status-select" onchange="updateStatus('${order.firestoreId}', this.value)" ${order.isArchived || order.status === 'Delivered' ? 'disabled' : ''} title="Ubah Status Pesanan"> <option value="Pending" ${order.status === "Pending" ? "selected" : ""}>Pending</option> <option value="In Progress" ${order.status === "In Progress" ? "selected" : ""}>In Progress</option> <option value="Completed" ${order.status === "Completed" ? "selected" : ""}>Completed</option> <option value="Delivered" ${order.status === "Delivered" ? "selected" : ""}>Delivered</option> </select> </td>
-                <td data-label="Tags" class="col-tags">${tagsHtml}</td> <td data-label="Link" class="col-link">${linkHtml}</td>
-                <td data-label="Catatan" class="col-notes" title="${notesTitle}">${notesDisplay}${notesEllipsis}</td>
-                <td data-label="Aksi" class="action-buttons">${actionButtonsHtml}</td> `;
+            tr.innerHTML = `<td class="col-checkbox"><input type="checkbox" class="row-checkbox" data-id="${order.id}" ${selectedOrderIds.has(order.id) ? 'checked' : ''} aria-label="Pilih ${order.clientName}"></td> <td data-label="Klien">${order.clientName}</td> <td data-label="Kontak" title="${contactTitle}">${contactDisplay}${contactEllipsis}</td> <td data-label="Project">${order.projectType}</td> <td data-label="Harga" class="col-price">${formatCurrency(order.projectPrice)}</td> <td data-label="Order">${formatDate(order.orderDate)}</td> <td data-label="Deadline">${deadlineText}</td> <td data-label="Prioritas" class="text-center">${prioritySelectHtml}</td> <td data-label="Status"><select class="status-select" onchange="updateStatus('${order.id}', this.value)" ${order.isArchived || order.status === 'Delivered' ? 'disabled' : ''} title="Ubah Status Pesanan"><option value="Pending" ${order.status === "Pending" ? "selected" : ""}>Pending</option><option value="In Progress" ${order.status === "In Progress" ? "selected" : ""}>In Progress</option><option value="Completed" ${order.status === "Completed" ? "selected" : ""}>Completed</option><option value="Delivered" ${order.status === "Delivered" ? "selected" : ""}>Delivered</option></select></td> <td data-label="Tags" class="col-tags">${tagsHtml}</td> <td data-label="Link" class="col-link">${linkHtml}</td> <td data-label="Catatan" class="col-notes" title="${notesTitle}">${notesDisplay}${notesEllipsis}</td> <td data-label="Aksi" class="action-buttons">${actionButtonsHtml}</td>`;
             fragment.appendChild(tr);
         });
         tbody.appendChild(fragment); addCheckboxListeners();
     }
 
-     // Removed Action Menu Dropdown Logic
-
-    // --- BULK ACTIONS (FIRESTORE) ---
-    function addCheckboxListeners() { $$('.row-checkbox').forEach(checkbox => { checkbox.addEventListener('change', (e) => { const firestoreId = e.target.dataset.id; const tr = e.target.closest('tr'); if (e.target.checked) { selectedOrderIds.add(firestoreId); tr?.classList.add('selected'); } else { selectedOrderIds.delete(firestoreId); tr?.classList.remove('selected'); } updateBulkActionUI(); }); }); }
-    $('#selectAllCheckbox')?.addEventListener('change', (e) => { const isChecked = e.target.checked; $$('.row-checkbox').forEach(checkbox => { const firestoreId = checkbox.dataset.id; const tr = checkbox.closest('tr'); checkbox.checked = isChecked; if (isChecked) { selectedOrderIds.add(firestoreId); tr?.classList.add('selected'); } else { selectedOrderIds.delete(firestoreId); tr?.classList.remove('selected'); } }); updateBulkActionUI(); });
-    function updateBulkActionUI() { const count = selectedOrderIds.size; const container = $('#bulkActionsContainer'); const countSpan = $('#selectedCount'); const changeStatusBtn = $('#bulkChangeStatusBtn'); const archiveBtn = $('#bulkArchiveBtn'); const deleteBtn = $('#bulkDeleteBtn'); const statusSelect = $('#bulkStatusChange'); if (!container || !countSpan || !changeStatusBtn || !archiveBtn || !deleteBtn || !statusSelect) return; if (count > 0) { container.classList.add('visible'); countSpan.textContent = count; let hasActive = false; let hasArchived = false; selectedOrderIds.forEach(id => { const order = orders.find(o => o.firestoreId === id); if (order) { if (order.isArchived) hasArchived = true; else hasActive = true; } }); const currentViewIsArchived = $('#showArchived').checked; const canArchive = hasActive && !hasArchived; const canDelete = hasArchived && !hasActive && currentViewIsArchived; changeStatusBtn.disabled = !statusSelect.value || !canArchive; archiveBtn.disabled = !canArchive; deleteBtn.disabled = !canDelete; } else { container.classList.remove('visible'); countSpan.textContent = 0; changeStatusBtn.disabled = true; archiveBtn.disabled = true; deleteBtn.disabled = true; statusSelect.value = ''; } }
+    // --- BULK ACTIONS ---
+    function addCheckboxListeners() { $$('.row-checkbox').forEach(checkbox => { checkbox.addEventListener('change', (e) => { const id = e.target.dataset.id; const tr = e.target.closest('tr'); if (e.target.checked) { selectedOrderIds.add(id); tr?.classList.add('selected'); } else { selectedOrderIds.delete(id); tr?.classList.remove('selected'); } updateBulkActionUI(); }); }); }
+    $('#selectAllCheckbox')?.addEventListener('change', (e) => { const isChecked = e.target.checked; $$('.row-checkbox').forEach(checkbox => { const id = checkbox.dataset.id; const tr = checkbox.closest('tr'); checkbox.checked = isChecked; if (isChecked) { selectedOrderIds.add(id); tr?.classList.add('selected'); } else { selectedOrderIds.delete(id); tr?.classList.remove('selected'); } }); updateBulkActionUI(); });
+    function updateBulkActionUI() { const count = selectedOrderIds.size; const container = $('#bulkActionsContainer'); const countSpan = $('#selectedCount'); const changeStatusBtn = $('#bulkChangeStatusBtn'); const archiveBtn = $('#bulkArchiveBtn'); const deleteBtn = $('#bulkDeleteBtn'); const statusSelect = $('#bulkStatusChange'); if (!container || !countSpan || !changeStatusBtn || !archiveBtn || !deleteBtn || !statusSelect) return; if (count > 0) { container.classList.add('visible'); countSpan.textContent = count; let hasActive = false; let hasArchived = false; selectedOrderIds.forEach(id => { const order = orders.find(o => o.id === id); if (order) { if (order.isArchived) hasArchived = true; else hasActive = true; } }); const currentViewIsArchived = $('#showArchived').checked; const canArchive = hasActive && !hasArchived; const canDelete = hasArchived && !hasActive && currentViewIsArchived; const canChangeStatus = hasActive && !hasArchived; changeStatusBtn.disabled = !statusSelect.value || !canChangeStatus; archiveBtn.disabled = !canArchive; deleteBtn.disabled = !canDelete; } else { container.classList.remove('visible'); countSpan.textContent = 0; changeStatusBtn.disabled = true; archiveBtn.disabled = true; deleteBtn.disabled = true; statusSelect.value = ''; } }
     $('#bulkStatusChange')?.addEventListener('change', updateBulkActionUI);
-    $('#bulkChangeStatusBtn')?.addEventListener('click', async () => { if (!db) return; const newStatus = $('#bulkStatusChange').value; if (!newStatus || selectedOrderIds.size === 0) return; const count = selectedOrderIds.size; if (!confirm(`Ubah status ${count} pesanan AKTIF terpilih menjadi "${newStatus}"?`)) return; showLoading(); const batch = db.batch(); let changedCount = 0; selectedOrderIds.forEach(id => { const order = orders.find(o => o.firestoreId === id); if (order && !order.isArchived) { const docRef = ordersCollection.doc(id); batch.update(docRef, { status: newStatus }); changedCount++; } }); try { await batch.commit(); if (changedCount > 0) { selectedOrderIds.forEach(id => { const index = orders.findIndex(o => o.firestoreId === id && !o.isArchived); if (index !== -1) orders[index].status = newStatus; }); selectedOrderIds.clear(); applyFilterAndSort(); showToast(`${changedCount} status pesanan diubah.`, "success"); } else { showToast("Tdk ada status pesanan aktif yg diubah.", "info"); updateBulkActionUI(); } } catch (error) { console.error("Error bulk changing status:", error); showToast("Gagal mengubah status masal.", "error"); } finally { hideLoading(); } });
-    $('#bulkArchiveBtn')?.addEventListener('click', async () => { if (!db) return; if (selectedOrderIds.size === 0) return; const count = selectedOrderIds.size; if (!confirm(`Arsipkan ${count} pesanan AKTIF terpilih?`)) return; showLoading(); const batch = db.batch(); let changedCount = 0; selectedOrderIds.forEach(id => { const order = orders.find(o => o.firestoreId === id); if (order && !order.isArchived) { const docRef = ordersCollection.doc(id); batch.update(docRef, { isArchived: true }); changedCount++; } }); try { await batch.commit(); if (changedCount > 0) { selectedOrderIds.forEach(id => { const index = orders.findIndex(o => o.firestoreId === id && !o.isArchived); if (index !== -1) orders[index].isArchived = true; }); selectedOrderIds.clear(); applyFilterAndSort(); showToast(`${changedCount} pesanan diarsipkan.`, "success"); } else { showToast("Tdk ada pesanan aktif yg diarsipkan.", "info"); updateBulkActionUI(); } } catch (error) { console.error("Error bulk archiving:", error); showToast("Gagal mengarsipkan masal.", "error"); } finally { hideLoading(); } });
-    $('#bulkDeleteBtn')?.addEventListener('click', async () => { if (!db) return; if (selectedOrderIds.size === 0 || !$('#showArchived').checked) return; let allArchived = true; selectedOrderIds.forEach(id => { const order = orders.find(o => o.firestoreId === id); if (order && !order.isArchived) allArchived = false; }); if (!allArchived) { showToast("Hanya pesanan arsip yg bisa dihapus masal.", "error"); return; } const count = selectedOrderIds.size; if (!confirm(`HAPUS PERMANEN ${count} pesanan arsip? Tidak bisa dibatalkan!`)) return; showLoading(); const batch = db.batch(); let deletedFirestoreIds = new Set(); selectedOrderIds.forEach(id => { const docRef = ordersCollection.doc(id); batch.delete(docRef); deletedFirestoreIds.add(id); }); try { await batch.commit(); const initialLength = orders.length; orders = orders.filter(order => !deletedFirestoreIds.has(order.firestoreId)); const changedCount = initialLength - orders.length; selectedOrderIds.clear(); applyFilterAndSort(); showToast(`${changedCount} pesanan arsip dihapus.`, "success"); } catch (error) { console.error("Error bulk deleting:", error); showToast("Gagal menghapus masal.", "error"); } finally { hideLoading(); } });
+    $('#bulkChangeStatusBtn')?.addEventListener('click', async () => { if (!supabase) return; const newStatus = $('#bulkStatusChange').value; if (!newStatus || selectedOrderIds.size === 0) return; const activeIdsToUpdate = [...selectedOrderIds].filter(id => { const order = orders.find(o => o.id === id); return order && !order.isArchived; }); if (activeIdsToUpdate.length === 0) { showToast("Tidak ada pesanan aktif yang dipilih untuk diubah statusnya.", "info"); return; } const count = activeIdsToUpdate.length; if (!confirm(`Ubah status ${count} pesanan AKTIF terpilih menjadi "${newStatus}"?`)) return; showLoading(); const updatePromises = activeIdsToUpdate.map(id => supabase.from('orders').update({ status: newStatus }).eq('id', id) ); try { const results = await Promise.allSettled(updatePromises); let successCount = 0; results.forEach((result, index) => { if (result.status === 'fulfilled' && !result.value.error) { successCount++; const updatedId = activeIdsToUpdate[index]; const orderIndex = orders.findIndex(o => o.id === updatedId); if (orderIndex !== -1) { orders[orderIndex].status = newStatus; } } else { const failedId = activeIdsToUpdate[index]; console.error(`Failed to update status for order ${failedId}:`, result.reason || result.value.error); } }); selectedOrderIds.clear(); applyFilterAndSort(); if (successCount === count) { showToast(`${successCount} status pesanan berhasil diubah.`, "success"); } else { showToast(`Berhasil mengubah status ${successCount} dari ${count} pesanan. Cek console log untuk error.`, "warning"); } } catch (error) { console.error("Error during bulk status change execution:", error); showToast("Terjadi error saat mengubah status masal.", "error"); loadData(); } finally { hideLoading(); } });
+    $('#bulkArchiveBtn')?.addEventListener('click', async () => { if (!supabase) return; const activeIdsToArchive = [...selectedOrderIds].filter(id => { const order = orders.find(o => o.id === id); return order && !order.isArchived; }); if (activeIdsToArchive.length === 0) { showToast("Tidak ada pesanan aktif yang dipilih untuk diarsipkan.", "info"); return; } const count = activeIdsToArchive.length; if (!confirm(`Arsipkan ${count} pesanan AKTIF terpilih?`)) return; showLoading(); const archivePromises = activeIdsToArchive.map(id => supabase.from('orders').update({ isArchived: true }).eq('id', id) ); try { const results = await Promise.allSettled(archivePromises); let successCount = 0; results.forEach((result, index) => { if (result.status === 'fulfilled' && !result.value.error) { successCount++; const archivedId = activeIdsToArchive[index]; const orderIndex = orders.findIndex(o => o.id === archivedId); if (orderIndex !== -1) { orders[orderIndex].isArchived = true; } } else { const failedId = activeIdsToArchive[index]; console.error(`Failed to archive order ${failedId}:`, result.reason || result.value.error); } }); selectedOrderIds.clear(); applyFilterAndSort(); if (successCount === count) { showToast(`${successCount} pesanan berhasil diarsipkan.`, "success"); } else { showToast(`Berhasil mengarsipkan ${successCount} dari ${count} pesanan. Cek console log untuk error.`, "warning"); } } catch (error) { console.error("Error during bulk archive execution:", error); showToast("Terjadi error saat mengarsipkan masal.", "error"); loadData(); } finally { hideLoading(); } });
+    $('#bulkDeleteBtn')?.addEventListener('click', async () => { if (!supabase) return; if (!$('#showArchived').checked) { showToast("Hanya bisa hapus masal dari tampilan Arsip.", "warning"); return; } const archivedIdsToDelete = [...selectedOrderIds].filter(id => { const order = orders.find(o => o.id === id); return order && order.isArchived; }); if (archivedIdsToDelete.length === 0) { showToast("Tidak ada pesanan arsip yang dipilih untuk dihapus.", "info"); return; } const count = archivedIdsToDelete.length; if (!confirm(`HAPUS PERMANEN ${count} pesanan arsip terpilih? Tindakan ini tidak bisa dibatalkan!`)) return; showLoading(); const deletePromises = archivedIdsToDelete.map(id => supabase.from('orders').delete().eq('id', id) ); try { const results = await Promise.allSettled(deletePromises); let successCount = 0; const deletedLocallyIds = new Set(); results.forEach((result, index) => { if (result.status === 'fulfilled' && !result.value.error) { successCount++; deletedLocallyIds.add(archivedIdsToDelete[index]); } else { const failedId = archivedIdsToDelete[index]; console.error(`Failed to delete archived order ${failedId}:`, result.reason || result.value.error); } }); orders = orders.filter(order => !deletedLocallyIds.has(order.id)); selectedOrderIds.clear(); applyFilterAndSort(); if (successCount === count) { showToast(`${successCount} pesanan arsip berhasil dihapus permanen.`, "success"); } else { showToast(`Berhasil menghapus ${successCount} dari ${count} pesanan arsip. Cek console log untuk error.`, "warning"); } } catch (error) { console.error("Error during bulk delete execution:", error); showToast("Terjadi error saat menghapus masal.", "error"); loadData(); } finally { hideLoading(); } });
 
     // --- DASHBOARD ---
-    function updateDashboard() { const activeOrders = orders.filter(o => !o.isArchived); const statusCounts = { Pending: 0, 'In Progress': 0, Completed: 0, Delivered: 0 }; let totalActiveValue = 0; activeOrders.forEach(o => { if(statusCounts.hasOwnProperty(o.status)) statusCounts[o.status]++; totalActiveValue += Number(o.projectPrice) || 0; }); $('#pendingCount').textContent = statusCounts.Pending; $('#progressCount').textContent = statusCounts['In Progress']; $('#completedCount').textContent = statusCounts.Completed; $('#deliveredCount').textContent = statusCounts.Delivered; $('#totalValueActive').textContent = formatCurrency(totalActiveValue); const recentTable = $('#recentOrdersTable'); const noRecentMsg = $('#noRecentOrdersMsg'); recentTable.innerHTML = ""; const sortedForRecent = activeOrders.sort((a, b) => (b.firestoreId || '').localeCompare(a.firestoreId || '')); const latestFive = sortedForRecent.slice(0, 5); if (latestFive.length === 0) { noRecentMsg.style.display = 'block'; recentTable.closest('.table-container').style.display = 'none'; } else { noRecentMsg.style.display = 'none'; recentTable.closest('.table-container').style.display = ''; const fragment = document.createDocumentFragment(); latestFive.forEach(order => { const tr = document.createElement("tr"); tr.innerHTML = `<td data-label="Klien">${order.clientName}</td> <td data-label="Project">${order.projectType}</td> <td data-label="Harga" class="text-right">${formatCurrency(order.projectPrice)}</td> <td data-label="Status">${order.status}</td> <td data-label="Prioritas" class="text-center"><span class="priority-badge priority-${order.priority}">${order.priority}</span></td>`; fragment.appendChild(tr); }); recentTable.appendChild(fragment); } }
+    function updateDashboard() {
+        const activeOrders = orders.filter(o => !o.isArchived); const statusCounts = { Pending: 0, 'In Progress': 0, Completed: 0, Delivered: 0 }; let totalActiveValue = 0;
+        activeOrders.forEach(o => { if(statusCounts.hasOwnProperty(o.status)) { statusCounts[o.status]++; } totalActiveValue += Number(o.projectPrice) || 0; });
+        $('#pendingCount').textContent = statusCounts.Pending; $('#progressCount').textContent = statusCounts['In Progress']; $('#completedCount').textContent = statusCounts.Completed; $('#deliveredCount').textContent = statusCounts.Delivered; $('#totalValueActive').textContent = formatCurrency(totalActiveValue);
+        const recentTable = $('#recentOrdersTable'); const noRecentMsg = $('#noRecentOrdersMsg'); recentTable.innerHTML = "";
+        const sortedForRecent = activeOrders.sort((a, b) => { const dateA = a.created_at ? new Date(a.created_at) : 0; const dateB = b.created_at ? new Date(b.created_at) : 0; if (dateB !== dateA) return dateB - dateA; return (b.id || '').localeCompare(a.id || ''); });
+        const latestFive = sortedForRecent.slice(0, 5);
+        if (latestFive.length === 0) { noRecentMsg.style.display = 'block'; recentTable.closest('.table-container').style.display = 'none'; } else { noRecentMsg.style.display = 'none'; recentTable.closest('.table-container').style.display = ''; const fragment = document.createDocumentFragment(); latestFive.forEach(order => { const tr = document.createElement("tr"); tr.innerHTML = `<td data-label="Klien">${order.clientName}</td> <td data-label="Project">${order.projectType}</td> <td data-label="Harga" class="text-right">${formatCurrency(order.projectPrice)}</td> <td data-label="Status">${order.status}</td> <td data-label="Prioritas" class="text-center"><span class="priority-badge priority-${order.priority}">${order.priority}</span></td>`; fragment.appendChild(tr); }); recentTable.appendChild(fragment); }
+    }
 
     // --- LAPORAN ---
     const reportProjectTypeFilter = $('#reportProjectTypeFilter'); const reportStartDateFilter = $('#reportStartDateFilter'); const reportEndDateFilter = $('#reportEndDateFilter'); const resetReportFiltersBtn = $('#resetReportFiltersBtn');
-    function populateReportProjectTypeFilter() { const types = [...new Set(orders.map(o => o.projectType))].sort(); reportProjectTypeFilter.innerHTML = '<option value="">-- Semua Jenis Project --</option>'; types.forEach(type => { const option = document.createElement('option'); option.value = type; option.textContent = type; reportProjectTypeFilter.appendChild(option); }); }
-    reportProjectTypeFilter?.addEventListener('change', generateReport); reportStartDateFilter?.addEventListener('change', generateReport); reportEndDateFilter?.addEventListener('change', generateReport);
-    resetReportFiltersBtn?.addEventListener('click', () => { reportProjectTypeFilter.value = ''; reportStartDateFilter.value = ''; reportEndDateFilter.value = ''; generateReport(); });
-    function getChartColors() { const isDarkMode = document.body.classList.contains('dark-mode'); const bodyStyle = getComputedStyle(document.body); return { status: { Pending: bodyStyle.getPropertyValue('--warning-color').trim(), 'In Progress': bodyStyle.getPropertyValue('--info-color').trim(), Completed: bodyStyle.getPropertyValue('--success-color').trim(), Delivered: bodyStyle.getPropertyValue('--revision-color').trim() }, projectTypes: isDarkMode ? ['#ef5350', '#42a5f5', '#66bb6a', '#ffa726', '#ab47bc', '#78909c', '#ec407a', '#26a69a', '#ffca28', '#d4e157'] : ['#dc3545', '#0d6efd', '#198754', '#ffc107', '#6f42c1', '#6c757d', '#fd7e14', '#20c997', '#ffc107', '#adb5bd'], textColor: bodyStyle.getPropertyValue('--text-color').trim(), gridColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }; }
+    function populateReportProjectTypeFilter() { const types = [...new Set(orders.map(o => o.projectType))].sort(); reportProjectTypeFilter.innerHTML = '<option value="">-- Semua Jenis Project --</option>'; types.forEach(type => { if(type) { const option = document.createElement('option'); option.value = type; option.textContent = type; reportProjectTypeFilter.appendChild(option); } }); }
+    reportProjectTypeFilter?.addEventListener('change', generateReport); reportStartDateFilter?.addEventListener('change', generateReport); reportEndDateFilter?.addEventListener('change', generateReport); resetReportFiltersBtn?.addEventListener('click', () => { reportProjectTypeFilter.value = ''; reportStartDateFilter.value = ''; reportEndDateFilter.value = ''; generateReport(); });
+    function getChartColors() { const isDarkMode = document.body.classList.contains('dark-mode'); const bodyStyle = getComputedStyle(document.body); return { status: { Pending: bodyStyle.getPropertyValue('--warning-color').trim(), 'In Progress': bodyStyle.getPropertyValue('--info-color').trim(), Completed: bodyStyle.getPropertyValue('--success-color').trim(), Delivered: bodyStyle.getPropertyValue('--revision-color').trim() }, projectTypes: isDarkMode ? ['#ef5350', '#42a5f5', '#66bb6a', '#ffa726', '#ab47bc', '#78909c', '#ec407a', '#26a69a', '#ffca28', '#d4e157'] : ['#dc3545', '#0d6efd', '#198754', '#ffc107', '#6f42c1', '#6c757d', '#fd7e14', '#20c997', '#ffc107', '#adb5bd'], textColor: bodyStyle.getPropertyValue('--text-color').trim(), gridColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)', accentColor: bodyStyle.getPropertyValue('--accent-color').trim() }; }
     let currentClientReportData = [];
-    function generateReport() { const reportTypeFilterValue = reportProjectTypeFilter.value; const reportStartValue = reportStartDateFilter.value; const reportEndValue = reportEndDateFilter.value; let filteredActiveOrders = orders.filter(o => !o.isArchived); if (reportTypeFilterValue) filteredActiveOrders = filteredActiveOrders.filter(o => o.projectType === reportTypeFilterValue); if (reportStartValue) filteredActiveOrders = filteredActiveOrders.filter(o => o.orderDate && o.orderDate >= reportStartValue); if (reportEndValue) filteredActiveOrders = filteredActiveOrders.filter(o => o.orderDate && o.orderDate <= reportEndValue); const archivedOrdersCount = orders.filter(o => o.isArchived).length; const totalActiveOrders = filteredActiveOrders.length; let totalActiveValue = 0; const statusValue = { Pending: 0, 'In Progress': 0, Completed: 0, Delivered: 0 }; const statusCounts = { Pending: 0, 'In Progress': 0, Completed: 0, Delivered: 0 }; const typeCounts = {}; const clientSummary = {}; const monthlyCounts = {}; filteredActiveOrders.forEach(o => { totalActiveValue += Number(o.projectPrice) || 0; if (statusValue.hasOwnProperty(o.status)) statusValue[o.status] += Number(o.projectPrice) || 0; if (statusCounts.hasOwnProperty(o.status)) statusCounts[o.status]++; typeCounts[o.projectType] = (typeCounts[o.projectType] || 0) + 1; if (!clientSummary[o.clientName]) clientSummary[o.clientName] = { count: 0, value: 0 }; clientSummary[o.clientName].count++; clientSummary[o.clientName].value += Number(o.projectPrice) || 0; if (o.orderDate?.length >= 7) { const yearMonth = o.orderDate.substring(0, 7); monthlyCounts[yearMonth] = (monthlyCounts[yearMonth] || 0) + 1; } }); $('#reportTotalActiveOrders').textContent = totalActiveOrders; $('#reportTotalArchivedOrders').textContent = archivedOrdersCount; $('#reportTotalActiveValue').textContent = formatCurrency(totalActiveValue); const statusCtx = $('#statusChart').getContext('2d'); const projectCtx = $('#projectTypeChart').getContext('2d'); const trendCtx = $('#trendChart').getContext('2d'); const reportStatusElement = $('#reportProjectStatus'); const reportTypeElement = $('#reportProjectType'); const reportValueElement = $('#reportProjectValue'); const clientTableBody = $('#clientSummaryTable tbody'); const colors = getChartColors(); if (statusChartInstance) statusChartInstance.destroy(); if (projectTypeChartInstance) projectTypeChartInstance.destroy(); if (trendChartInstance) trendChartInstance.destroy(); reportStatusElement.innerHTML = ''; reportTypeElement.innerHTML = ''; reportValueElement.innerHTML = ''; clientTableBody.innerHTML = ''; const emptyChartMsg = '<p class="empty-message" style="padding: 20px 0;">Tidak ada data aktif sesuai filter.</p>'; if (totalActiveOrders === 0) { reportStatusElement.innerHTML = emptyChartMsg; reportTypeElement.innerHTML = emptyChartMsg; reportValueElement.innerHTML = emptyChartMsg; clientTableBody.innerHTML = `<tr><td colspan="3">${emptyChartMsg}</td></tr>`; statusCtx.canvas.style.display = 'none'; projectCtx.canvas.style.display = 'none'; trendCtx.canvas.style.display = 'none'; return; } statusCtx.canvas.style.display = 'block'; projectCtx.canvas.style.display = 'block'; trendCtx.canvas.style.display = 'block'; statusChartInstance = new Chart(statusCtx, { type: 'doughnut', data: { labels: Object.keys(statusCounts), datasets: [{ label: 'Status (Jumlah)', data: Object.values(statusCounts), backgroundColor: Object.keys(statusCounts).map(label => colors.status[label] || '#cccccc'), borderColor: colors.gridColor, borderWidth: 1, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: colors.textColor, padding: 15 } }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} (${(ctx.raw / totalActiveOrders * 100).toFixed(1)}%)` } } } } }); const sortedTypes = Object.entries(typeCounts).sort(([,a],[,b]) => b-a); projectTypeChartInstance = new Chart(projectCtx, { type: 'bar', data: { labels: sortedTypes.map(([label]) => label), datasets: [{ label: 'Jumlah per Tipe', data: sortedTypes.map(([,data]) => data), backgroundColor: sortedTypes.map((_, index) => colors.projectTypes[index % colors.projectTypes.length]), borderColor: sortedTypes.map((_, index) => colors.projectTypes[index % colors.projectTypes.length]), borderWidth: 1, borderRadius: 3 }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { ticks: { color: colors.textColor, precision: 0 }, grid: { color: colors.gridColor, drawBorder: false } }, y: { ticks: { color: colors.textColor }, grid: { display: false, drawBorder: false } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw} order` } } } } }); let valueReportHtml = '<ul>'; Object.keys(statusValue).forEach(status => { valueReportHtml += `<li><span class="status-color-dot" style="background-color: ${colors.status[status] || '#ccc'};"></span> ${status}: <strong>${formatCurrency(statusValue[status])}</strong></li>`; }); valueReportHtml += `<li class="total-value"><strong>Total Nilai Aktif:</strong> <strong>${formatCurrency(totalActiveValue)}</strong></li></ul>`; reportValueElement.innerHTML = valueReportHtml; currentClientReportData = Object.entries(clientSummary); sortClientTable(clientReportSort.column, clientReportSort.direction); const sortedMonths = Object.keys(monthlyCounts).sort(); const trendLabels = sortedMonths.map(month => new Date(month + '-01T00:00:00')); const trendData = sortedMonths.map(month => monthlyCounts[month]); trendChartInstance = new Chart(trendCtx, { type: 'line', data: { datasets: [{ label: 'Jumlah Order Masuk', data: trendLabels.map((date, index) => ({x: date, y: trendData[index]})), borderColor: colors.accentColor || '#007bff', backgroundColor: colors.accentColor ? colors.accentColor + '33' : '#007bff33', tension: 0.1, fill: true, pointBackgroundColor: colors.accentColor || '#007bff', pointRadius: 4, pointHoverRadius: 6, }] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: 'time', time: { unit: 'month', tooltipFormat: 'MMM yyyy', displayFormats: { month: 'MMM yyyy' } }, title: { display: true, text: 'Bulan Order', color: colors.textColor }, ticks: { color: colors.textColor }, grid: { color: colors.gridColor } }, y: { title: { display: true, text: 'Jumlah Order', color: colors.textColor }, ticks: { color: colors.textColor, precision: 0 }, grid: { color: colors.gridColor } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { title: ctx => ctx[0].label, label: ctx => ` ${ctx.raw} order` } } } } }); }
-    function sortClientTable(columnIndex, direction = null) { const clientTableBody = $('#clientSummaryTable tbody'); const dir = direction ? direction : (clientReportSort.column === columnIndex ? (clientReportSort.direction === 'asc' ? 'desc' : 'asc') : 'desc'); clientReportSort = { column: columnIndex, direction: dir }; currentClientReportData.sort((a, b) => { let valA, valB; const dataA = a[1]; const dataB = b[1]; const nameA = a[0]; const nameB = b[0]; if (columnIndex === 0) { valA = nameA || ''; valB = nameB || ''; } else if (columnIndex === 1) { valA = dataA.count || 0; valB = dataB.count || 0; } else { valA = dataA.value || 0; valB = dataB.value || 0; } const sortDir = dir === 'asc' ? 1 : -1; if (valA < valB) return -1 * sortDir; if (valA > valB) return 1 * sortDir; return 0; }); clientTableBody.innerHTML = ''; const fragment = document.createDocumentFragment(); currentClientReportData.slice(0, 10).forEach(([name, data]) => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${name}</td><td class="text-center">${data.count}</td><td class="text-right">${formatCurrency(data.value)}</td>`; fragment.appendChild(tr); }); clientTableBody.appendChild(fragment); }
+    function generateReport() {
+        const reportTypeFilterValue = reportProjectTypeFilter.value; const reportStartValue = reportStartDateFilter.value; const reportEndValue = reportEndDateFilter.value;
+        let filteredActiveOrders = orders.filter(o => !o.isArchived); if (reportTypeFilterValue) { filteredActiveOrders = filteredActiveOrders.filter(o => o.projectType === reportTypeFilterValue); } if (reportStartValue) { filteredActiveOrders = filteredActiveOrders.filter(o => o.orderDate && o.orderDate >= reportStartValue); } if (reportEndValue) { filteredActiveOrders = filteredActiveOrders.filter(o => o.orderDate && o.orderDate <= reportEndValue); }
+        const archivedOrdersCount = orders.filter(o => o.isArchived).length; const totalActiveOrders = filteredActiveOrders.length; let totalActiveValue = 0; const statusValue = { Pending: 0, 'In Progress': 0, Completed: 0, Delivered: 0 }; const statusCounts = { Pending: 0, 'In Progress': 0, Completed: 0, Delivered: 0 }; const typeCounts = {}; const clientSummary = {}; const monthlyCounts = {};
+        filteredActiveOrders.forEach(o => { totalActiveValue += Number(o.projectPrice) || 0; if (statusValue.hasOwnProperty(o.status)) { statusValue[o.status] += Number(o.projectPrice) || 0; } if (statusCounts.hasOwnProperty(o.status)) { statusCounts[o.status]++; } typeCounts[o.projectType] = (typeCounts[o.projectType] || 0) + 1; if (!clientSummary[o.clientName]) { clientSummary[o.clientName] = { count: 0, value: 0 }; } clientSummary[o.clientName].count++; clientSummary[o.clientName].value += Number(o.projectPrice) || 0; if (o.orderDate && typeof o.orderDate === 'string' && o.orderDate.length >= 7) { const yearMonth = o.orderDate.substring(0, 7); monthlyCounts[yearMonth] = (monthlyCounts[yearMonth] || 0) + 1; } });
+        $('#reportTotalActiveOrders').textContent = totalActiveOrders; $('#reportTotalArchivedOrders').textContent = archivedOrdersCount; $('#reportTotalActiveValue').textContent = formatCurrency(totalActiveValue);
+        const statusCtx = $('#statusChart').getContext('2d'); const projectCtx = $('#projectTypeChart').getContext('2d'); const trendCtx = $('#trendChart').getContext('2d'); const reportStatusElement = $('#reportProjectStatus'); const reportTypeElement = $('#reportProjectType'); const reportValueElement = $('#reportProjectValue'); const clientTableBody = $('#clientSummaryTable tbody'); const colors = getChartColors();
+        if (statusChartInstance) statusChartInstance.destroy(); if (projectTypeChartInstance) projectTypeChartInstance.destroy(); if (trendChartInstance) trendChartInstance.destroy();
+        reportStatusElement.innerHTML = ''; reportTypeElement.innerHTML = ''; reportValueElement.innerHTML = ''; clientTableBody.innerHTML = '';
+        const emptyChartMsg = '<p class="empty-message" style="padding: 20px 0;">Tidak ada data aktif sesuai filter.</p>';
+        if (totalActiveOrders === 0) { reportStatusElement.innerHTML = emptyChartMsg; reportTypeElement.innerHTML = emptyChartMsg; reportValueElement.innerHTML = emptyChartMsg; clientTableBody.innerHTML = `<tr><td colspan="3">${emptyChartMsg}</td></tr>`; statusCtx.canvas.style.display = 'none'; projectCtx.canvas.style.display = 'none'; trendCtx.canvas.style.display = 'none'; return; }
+        statusCtx.canvas.style.display = 'block'; projectCtx.canvas.style.display = 'block'; trendCtx.canvas.style.display = 'block';
+        statusChartInstance = new Chart(statusCtx, { type: 'doughnut', data: { labels: Object.keys(statusCounts), datasets: [{ label: 'Status (Jumlah)', data: Object.values(statusCounts), backgroundColor: Object.keys(statusCounts).map(label => colors.status[label] || '#cccccc'), borderColor: colors.gridColor, borderWidth: 1, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: colors.textColor, padding: 15 } }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} (${(ctx.raw / totalActiveOrders * 100).toFixed(1)}%)` } } } } });
+        const sortedTypes = Object.entries(typeCounts).sort(([,a],[,b]) => b-a); projectTypeChartInstance = new Chart(projectCtx, { type: 'bar', data: { labels: sortedTypes.map(([label]) => label), datasets: [{ label: 'Jumlah per Tipe', data: sortedTypes.map(([,data]) => data), backgroundColor: sortedTypes.map((_, index) => colors.projectTypes[index % colors.projectTypes.length]), borderColor: sortedTypes.map((_, index) => colors.projectTypes[index % colors.projectTypes.length]), borderWidth: 1, borderRadius: 3 }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { ticks: { color: colors.textColor, precision: 0 }, grid: { color: colors.gridColor, drawBorder: false } }, y: { ticks: { color: colors.textColor }, grid: { display: false, drawBorder: false } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw} order` } } } } });
+        let valueReportHtml = '<ul>'; Object.keys(statusValue).forEach(status => { valueReportHtml += `<li><span class="status-color-dot" style="background-color: ${colors.status[status] || '#ccc'};"></span> ${status}: <strong>${formatCurrency(statusValue[status])}</strong></li>`; }); valueReportHtml += `<li class="total-value"><strong>Total Nilai Aktif:</strong> <strong>${formatCurrency(totalActiveValue)}</strong></li></ul>`; reportValueElement.innerHTML = valueReportHtml;
+        currentClientReportData = Object.entries(clientSummary); sortClientTable(clientReportSort.column, clientReportSort.direction);
+        const sortedMonths = Object.keys(monthlyCounts).sort(); const trendLabels = sortedMonths.map(month => new Date(month + '-01T00:00:00')); const trendData = sortedMonths.map(month => monthlyCounts[month]);
+        trendChartInstance = new Chart(trendCtx, { type: 'line', data: { datasets: [{ label: 'Jumlah Order Masuk', data: trendLabels.map((date, index) => ({x: date, y: trendData[index]})), borderColor: colors.accentColor, backgroundColor: colors.accentColor ? colors.accentColor + '33' : '#007bff33', tension: 0.1, fill: true, pointBackgroundColor: colors.accentColor, pointRadius: 4, pointHoverRadius: 6, }] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: 'time', time: { unit: 'month', tooltipFormat: 'MMM yyyy', displayFormats: { month: 'MMM yyyy' } }, title: { display: true, text: 'Bulan Order', color: colors.textColor }, ticks: { color: colors.textColor }, grid: { color: colors.gridColor } }, y: { title: { display: true, text: 'Jumlah Order', color: colors.textColor }, ticks: { color: colors.textColor, precision: 0 }, grid: { color: colors.gridColor }, beginAtZero: true } }, plugins: { legend: { display: false }, tooltip: { callbacks: { title: ctx => ctx[0].label, label: ctx => ` ${ctx.raw} order` } } } } });
+    }
+    function sortClientTable(columnIndex, direction = null) { const clientTableBody = $('#clientSummaryTable tbody'); const dir = direction ? direction : (clientReportSort.column === columnIndex ? (clientReportSort.direction === 'asc' ? 'desc' : 'asc') : 'desc'); clientReportSort = { column: columnIndex, direction: dir }; currentClientReportData.sort((a, b) => { let valA, valB; const dataA = a[1]; const dataB = b[1]; const nameA = a[0]; const nameB = b[0]; if (columnIndex === 0) { valA = nameA || ''; valB = nameB || ''; } else if (columnIndex === 1) { valA = dataA.count || 0; valB = dataB.count || 0; } else { valA = dataA.value || 0; valB = dataB.value || 0; } const sortDir = dir === 'asc' ? 1 : -1; if (typeof valA === 'string') { return valA.localeCompare(valB) * sortDir; } else { if (valA < valB) return -1 * sortDir; if (valA > valB) return 1 * sortDir; } return 0; }); clientTableBody.innerHTML = ''; const fragment = document.createDocumentFragment(); currentClientReportData.slice(0, 10).forEach(([name, data]) => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${name}</td><td class="text-center">${data.count}</td><td class="text-right">${formatCurrency(data.value)}</td>`; fragment.appendChild(tr); }); clientTableBody.appendChild(fragment); }
 
     // --- EXPORT TO CSV ---
-    function exportToCSV() { const showArchived = $('#showArchived').checked; const ordersToExport = orders.filter(order => order.isArchived === showArchived); if (ordersToExport.length === 0) { showToast(`Tidak ada data ${showArchived ? 'arsip' : 'aktif'} untuk diekspor.`, "info"); return; } const headers = ['ID', 'Nama Klien', 'Kontak Klien', 'Jenis Project', 'Harga', 'Tanggal Order', 'Deadline', 'Prioritas', 'Status', 'Tags', 'Link Lampiran', 'Catatan']; const rows = ordersToExport.map(order => [ order.firestoreId, `"${(order.clientName || '').replace(/"/g, '""')}"`, `"${(order.clientContact || '').replace(/"/g, '""')}"`, order.projectType, order.projectPrice || 0, order.orderDate, order.deadline, order.priority, order.status, `"${(order.projectTags || []).join(', ').replace(/"/g, '""')}"`, `"${(order.attachmentLink || '').replace(/"/g, '""')}"`, `"${(order.notes || '').replace(/"/g, '""')}"` ]); let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n"); const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); const timestamp = new Date().toISOString().slice(0, 10); const fileType = showArchived ? 'arsip' : 'aktif'; link.setAttribute("download", `project_klien_${fileType}_${timestamp}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); showToast(`Data ${fileType} diekspor ke CSV.`, "success"); }
+    function exportToCSV() { const showArchived = $('#showArchived').checked; const ordersToExport = filterOrders(); if (ordersToExport.length === 0) { showToast(`Tidak ada data ${showArchived ? 'arsip' : 'aktif'} (sesuai filter) untuk diekspor.`, "info"); return; } const headers = ['ID', 'Nama Klien', 'Kontak Klien', 'Jenis Project', 'Harga', 'Tanggal Order', 'Deadline', 'Prioritas', 'Status', 'Tags', 'Link Lampiran', 'Catatan', 'Dibuat Pada']; const rows = ordersToExport.map(order => [ order.id, `"${(order.clientName || '').replace(/"/g, '""')}"`, `"${(order.clientContact || '').replace(/"/g, '""')}"`, order.projectType, order.projectPrice || 0, order.orderDate, order.deadline, order.priority, order.status, `"${(Array.isArray(order.projectTags) ? order.projectTags.join(', ') : '').replace(/"/g, '""')}"`, `"${(order.attachmentLink || '').replace(/"/g, '""')}"`, `"${(order.notes || '').replace(/"/g, '""')}"`, order.created_at || '' ]); let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n"); const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); const timestamp = new Date().toISOString().slice(0, 10); const fileType = showArchived ? 'arsip' : 'aktif'; link.setAttribute("download", `project_klien_${fileType}_${timestamp}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); showToast(`Data ${fileType} (sesuai filter) diekspor ke CSV.`, "success"); }
 
     // --- UI & NAVIGATION ---
     function toggleMenu() { $('#navMenu').classList.toggle('show'); }
     function setActiveLink(activeSectionId) { $$('#navMenu a').forEach(link => { link.classList.toggle('active-link', link.getAttribute('data-section') === activeSectionId); }); }
-    function showSection(sectionId, clickedLink = null) {
-        $('#navMenu').classList.remove('show'); $$('main section').forEach(sec => sec.classList.remove('active')); const activeSection = $(`#${sectionId}`);
-        if (activeSection) { activeSection.classList.add('active'); setActiveLink(sectionId); $('main').scrollTo({ top: 0, behavior: 'auto' }); }
-        else { console.warn(`Section ${sectionId} not found.`); $('#dashboardSection').classList.add('active'); setActiveLink('dashboardSection'); }
-        try {
-            switch (sectionId) {
-                case "dashboardSection": updateDashboard(); break;
-                case "reportSection": generateReport(); break;
-                case "listSection": applyFilterAndSort(); break;
-                case "inputSection": $('#orderForm').reset(); $$('#orderForm .error-message').forEach(el => el.style.display = 'none'); $$('#orderForm .invalid').forEach(el => el.classList.remove('invalid')); $('#clientName').focus(); break;
-            }
-        } catch(error) { console.error(`Error activating section ${sectionId}:`, error); showToast(`Gagal memuat bagian ${sectionId}.`, "error"); }
-    }
+    function showSection(sectionId, clickedLink = null) { $('#navMenu').classList.remove('show'); $$('main section').forEach(sec => sec.classList.remove('active')); const activeSection = $(`#${sectionId}`); if (activeSection) { activeSection.classList.add('active'); setActiveLink(sectionId); $('main').scrollTo({ top: 0, behavior: 'auto' }); } else { console.warn(`Section ${sectionId} not found. Showing dashboard.`); $('#dashboardSection').classList.add('active'); setActiveLink('dashboardSection'); $('main').scrollTo({ top: 0, behavior: 'auto' }); } try { switch (sectionId) { case "dashboardSection": updateDashboard(); break; case "reportSection": populateReportProjectTypeFilter(); generateReport(); break; case "listSection": applyFilterAndSort(); break; case "inputSection": $('#orderForm').reset(); $$('#orderForm .error-message').forEach(el => el.style.display = 'none'); $$('#orderForm .invalid').forEach(el => el.classList.remove('invalid')); $('#clientName').focus(); break; } } catch(error) { console.error(`Error activating section ${sectionId}:`, error); showToast(`Gagal memuat bagian ${sectionId}.`, "error"); } }
 
     // --- INITIAL LOAD ---
     document.addEventListener('DOMContentLoaded', () => {
-        if (!db) { showToast("Koneksi Database Gagal! Fitur tidak akan berjalan.", "error", 10000); showLoading = () => {}; hideLoading = () => {}; $('#loadingOverlay').innerHTML = '<p style="color: red; font-weight: bold;">Koneksi Database Gagal</p>'; $('#loadingOverlay').style.backgroundColor = 'rgba(255,200,200,0.8)'; showLoading(); return; }
-        loadData().then(() => { showSection('dashboardSection'); }).catch(err => { console.error("Initial data load failed:", err); showToast("Gagal memuat data awal.", "error"); hideLoading(); });
+        if (!supabase) { console.error("Supabase client not available on DOMContentLoaded. Check initialization errors."); return; }
+        loadData().then(() => { showSection('dashboardSection'); console.log("Initial data loaded and dashboard displayed."); }).catch(err => { console.error("Initial data load failed:", err); showToast("Gagal memuat data awal.", "error"); hideLoading(); });
     });
 
     </script>

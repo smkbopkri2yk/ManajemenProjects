@@ -2,1087 +2,524 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Program Piket OSIS (Fitur Tukar Tugas)</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Aplikasi Manajemen Project Klien NextGen (Firebase)</title>
 
-    <!-- Font Awesome CDN -->
-    <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"
-        integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA=="
-        crossorigin="anonymous"
-        referrerpolicy="no-referrer"
-    />
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
 
-    <!-- Toastify CSS CDN -->
-    <link
-        rel="stylesheet"
-        type="text/css"
-        href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css"
-    />
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.29.3/esm/index.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns@2.0.0/dist/chartjs-adapter-date-fns.bundle.min.js"></script>
+
 
     <style>
-        /* =========== GAYA CSS (Ditambah Swap Button & Modal) =========== */
+        /* --- CSS Variables for Theming --- */
         :root {
-            --primary-blue: #007bff; --secondary-yellow: #ffc107; --light-bg: #f8f9fa; --white: #ffffff; --dark-text: #333; --blue-text: #0056b3; --border-color: #dee2e6; --danger-red: #dc3545; --warning-orange: #fd7e14; --success-green: #28a745; --info-cyan: #17a2b8; --disabled-bg: #e9ecef; --disabled-text: #6c757d; --modal-overlay: rgba(0, 0, 0, 0.6); --gold-color: #ffd700; --swap-color: #6f42c1; /* Warna ungu untuk swap */
+            --bg-color: #f8f9fa; --text-color: #212529; --card-bg: #fff;
+            --header-bg: #343a40; --header-text: #fff; --accent-color: #007bff;
+            --border-color: #dee2e6; --input-border: #ced4da; --highlight-bg: #e9ecef;
+            --danger-color: #dc3545; --warning-color: #ffc107; --success-color: #28a745;
+            --info-color: #17a2b8; --revision-color: #6f42c1;
+            --priority-high-bg: #f8d7da; --priority-high-text: #721c24;
+            --priority-medium-bg: #fff3cd; --priority-medium-text: #856404;
+            --priority-low-bg: #d4edda; --priority-low-text: #155724;
+            --archived-row-bg: #e9ecef; --link-color: #007bff;
+            --focus-ring-color: rgba(0, 123, 255, 0.25);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.05); --shadow-md: 0 4px 6px rgba(0,0,0,0.1);
+            --tag-bg: #e2e3e5; --tag-text: #495057;
+            --selected-row-bg: color-mix(in srgb, var(--accent-color) 15%, transparent);
+            --button-gap: 8px; --padding-base: 1rem;
+            --loading-overlay-bg: rgba(255, 255, 255, 0.7);
+            --menu-bg: var(--card-bg); --menu-shadow: var(--shadow-md); --menu-border: var(--border-color); --menu-item-hover-bg: var(--highlight-bg);
         }
-        *, *::before, *::after { box-sizing: border-box; }
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 20px; background-color: var(--light-bg); color: var(--dark-text); line-height: 1.6; }
-        #main-app { inline-size: 100%; max-inline-size: 900px; margin: 0 auto; background-color: var(--white); padding: 30px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1); border-block-start: 5px solid var(--primary-blue); display: block; opacity: 1; transform: none; }
-        #main-app h1, #main-app h2, #main-app h3 { color: var(--primary-blue); }
-        #main-app h1 { border-block-end: 2px solid var(--secondary-yellow); padding-block-end: 10px; margin-block-end: 20px; }
-        #main-app h2 { border-block-end: 1px solid var(--secondary-yellow); padding-block-end: 8px; margin-block-end: 15px; margin-block-start: 30px; }
-        #main-app h3 { margin-block-start: 20px; margin-block-end: 10px; color: var(--blue-text); font-size: 1.1em; }
-        .section { margin-block-end: 30px; padding: 20px; border: 1px solid var(--border-color); border-radius: 5px; background-color: #fdfdff; }
-        #main-app label { display: block; margin-block-end: 8px; font-weight: bold; color: var(--blue-text); }
-        #main-app input[type="text"], #main-app input[type="date"], #main-app select, #main-app textarea, .modal-content input[type="text"], .modal-content input[type="search"], .modal-content select { inline-size: 100%; padding: 10px; margin-block-end: 15px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 1rem; transition: border-color 0.3s ease; background-color: var(--white); /* Ensure select background is white */ }
-        #main-app input:focus, #main-app select:focus, #main-app textarea:focus, .modal-content input:focus, .modal-content select:focus { border-color: var(--primary-blue); outline: none; box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25); }
-        #main-app textarea { min-block-size: 80px; }
-
-        /* Buttons (Added Swap Color) */
-        #main-app button, .modal-actions button, .modal-header-actions button { background-color: var(--primary-blue); color: var(--white); border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-size: 1rem; transition: background-color 0.3s ease, opacity 0.3s ease; margin-inline-end: 10px; margin-block-end: 10px; display: inline-flex; align-items: center; justify-content: center; gap: 8px; position: relative; overflow: hidden; }
-        #main-app button i, .modal-actions button i, .modal-header-actions button i { min-inline-size: 1em; text-align: center; }
-        #main-app button:hover, .modal-actions button:hover, .modal-header-actions button:hover { background-color: var(--blue-text); }
-        #main-app button.secondary, .modal-actions button.secondary, .modal-header-actions button.secondary { background-color: var(--secondary-yellow); color: var(--dark-text); }
-        #main-app button.secondary:hover, .modal-actions button.secondary:hover, .modal-header-actions button.secondary:hover { background-color: #e0a800; }
-        #main-app button.danger, .modal-actions button.danger, .modal-header-actions button.danger { background-color: var(--danger-red); }
-        #main-app button.danger:hover, .modal-actions button.danger:hover, .modal-header-actions button.danger:hover { background-color: #c82333; }
-        #main-app button.warning, .modal-actions button.warning, .modal-header-actions button.warning { background-color: var(--warning-orange); }
-        #main-app button.warning:hover, .modal-actions button.warning:hover, .modal-header-actions button.warning:hover { background-color: #e46d0f; }
-        #main-app button.info, .modal-actions button.info, .modal-header-actions button.info { background-color: var(--info-cyan); }
-        #main-app button.info:hover, .modal-actions button.info:hover, .modal-header-actions button.info:hover { background-color: #138496; }
-        #main-app button.success, .modal-actions button.success, .modal-header-actions button.success { background-color: var(--success-green); }
-        #main-app button.success:hover, .modal-actions button.success:hover, .modal-header-actions button.success:hover { background-color: #218838; }
-        #main-app button.swap, .modal-actions button.swap { background-color: var(--swap-color); } /* Swap button color */
-        #main-app button.swap:hover, .modal-actions button.swap:hover { background-color: #5a32a3; } /* Darker purple */
-        #main-app button.small-btn, .modal-actions button.small-btn, .modal-header-actions button.small-btn { padding: 5px 10px; font-size: 0.9em; gap: 5px; margin-inline-end: 5px; margin-block-end: 0; }
-        #main-app button.loading, .modal-actions button.loading, .modal-header-actions button.loading { opacity: 0.7; cursor: not-allowed; }
-        #main-app button .button-text, .modal-actions button .button-text, .modal-header-actions button .button-text { transition: opacity 0.2s ease; }
-        #main-app button.loading .button-text, .modal-actions button.loading .button-text, .modal-header-actions button.loading .button-text { opacity: 0; }
-        #main-app button .spinner, .modal-actions button .spinner, .modal-header-actions button .spinner { display: none; position: absolute; inset-block-start: 50%; inset-inline-start: 50%; transform: translate(-50%, -50%); border: 3px solid rgba(255, 255, 255, 0.3); border-radius: 50%; border-block-start-color: var(--white); inline-size: 18px; block-size: 18px; animation: spin 1s linear infinite; }
-        #main-app button.loading .spinner, .modal-actions button.loading .spinner, .modal-header-actions button.loading .spinner { display: block; }
-        @keyframes spin { to { transform: translate(-50%, -50%) rotate(360deg); } }
-        #main-app button:disabled, .modal-actions button:disabled, .modal-header-actions button:disabled { background-color: var(--disabled-bg); color: var(--disabled-text); cursor: not-allowed; opacity: 0.6; }
-        #main-app button:disabled:hover, .modal-actions button:disabled:hover, .modal-header-actions button:disabled:hover { background-color: var(--disabled-bg); }
-
-        /* Search Container (Unchanged) */
-        .search-container { margin-block-end: 15px; position: relative; }
-        .search-container input[type="search"] { inline-size: 100%; padding: 8px 12px 8px 35px; font-size: 0.95rem; border-radius: 20px; border: 1px solid var(--border-color); }
-        .search-container .search-icon { position: absolute; inset-inline-start: 12px; inset-block-start: 50%; transform: translateY(-50%); color: var(--disabled-text); z-index: 1; }
-
-        /* Schedule Display (Unchanged) */
-        #scheduleDisplay strong { color: var(--primary-blue); min-inline-size: 80px; display: inline-block; }
-        #scheduleDisplay div { background-color: var(--light-bg); padding: 10px 15px; margin-block-end: 8px; border: 1px solid var(--border-color); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; transition: background-color 0.2s ease; }
-        #scheduleDisplay div:hover { background-color: #e9ecef; }
-
-        /* Attendance Specifics (Added Swap Button Style) */
-        #attendanceMarking { transition: opacity 0.4s ease, max-height 0.4s ease, margin-top 0.4s ease; overflow: hidden; opacity: 0; max-block-size: 0; margin-block-start: 0 !important; }
-        #attendanceMarking.visible { opacity: 1; max-block-size: 1000px; margin-block-start: 20px !important; }
-        .date-navigation { display: flex; align-items: center; gap: 5px; margin-block-end: 15px; }
-        .date-navigation input[type="date"] { flex-grow: 1; margin-block-end: 0; }
-        .date-navigation button { padding: 8px 10px; font-size: 1rem; margin-block-end: 0; line-height: 1; }
-        #attendanceCheckboxes .attendance-item { display: flex; align-items: center; margin-block-end: 8px; padding: 8px; border-radius: 4px; transition: background-color 0.2s; }
-        #attendanceCheckboxes .attendance-item:hover { background-color: #e9ecef; }
-        #attendanceCheckboxes label { display: inline-flex; align-items: center; margin-inline-start: 0; margin-inline-end: 15px; font-weight: normal; color: var(--dark-text); cursor: pointer; flex-grow: 1; }
-        #attendanceCheckboxes input[type="checkbox"] { margin-inline-end: 8px; transform: scale(1.2); cursor: pointer; }
-        #attendanceCheckboxes input[type="text"].reason-input { margin-inline-start: 10px; padding: 4px 8px; font-size: 0.9em; border: 1px solid var(--border-color); border-radius: 3px; inline-size: auto; flex-basis: 180px; transition: opacity 0.3s ease, max-width 0.3s ease; opacity: 0; max-inline-size: 0; overflow: hidden; }
-        #attendanceCheckboxes .attendance-item.show-reason .reason-input { opacity: 1; max-inline-size: 180px; }
-        #attendanceCheckboxes .swap-button { margin-inline-start: auto; /* Push swap button to the right */ }
-        #attendanceStatus { margin-block-start: 20px; padding: 15px; border: 1px dashed var(--primary-blue); border-radius: 5px; }
-        #attendanceStatus ul { margin-block-start: 10px; list-style: none; padding: 0; }
-        #attendanceStatus li { margin-block-end: 5px; padding-inline-start: 15px; }
-        #attendanceStatus .present { color: var(--success-green); font-weight: bold; }
-        #attendanceStatus .absent { color: var(--danger-red); font-weight: bold; }
-        #attendanceStatus .swapped-out { color: var(--warning-orange); font-style: italic; } /* Style for swapped out */
-        #attendanceStatus .substitute { color: var(--swap-color); font-weight: bold; } /* Style for substitute */
-        #attendanceStatus .reason-text { font-size: 0.9em; color: #555; margin-inline-start: 5px; font-style: italic; }
-        #attendanceStatus .swap-info { font-size: 0.9em; color: #555; margin-inline-start: 5px; font-style: italic; }
-
-        /* Reporting (Unchanged) */
-        .report-item { background-color: var(--light-bg); padding: 10px 15px; margin-block-end: 8px; border: 1px solid var(--border-color); border-radius: 4px; display: block; transition: background-color 0.2s ease; }
-        .report-item:hover { background-color: #e9ecef; }
-        .report-bar-container { display: flex; align-items: center; margin-block-start: 5px; }
-        .report-bar { block-size: 20px; background-color: var(--primary-blue); border-radius: 3px; margin-inline-end: 10px; min-inline-size: 10px; transition: width 0.5s ease-out; }
-        .report-bar.low { background-color: var(--secondary-yellow); }
-        .report-text { font-size: 0.9em; color: #555; }
-        .report-summary { margin-block-start: 20px; padding-block-start: 15px; border-block-start: 1px solid var(--border-color); font-size: 1.05em; }
-        .report-summary .positive { color: var(--success-green); }
-        .report-summary .needs-improvement { color: var(--warning-orange); }
-        small { color: #6c757d; display: block; margin-block-start: -10px; margin-block-end: 15px; }
-
-        /* Monthly Award Section (Unchanged) */
-        #awardResultDisplay { margin-block-start: 15px; padding: 15px; border: 1px solid var(--secondary-yellow); border-radius: 5px; background-color: #fffcf1; min-block-size: 50px; }
-        #awardResultDisplay p { margin: 0; font-size: 1.1em; }
-        #awardResultDisplay strong { color: var(--blue-text); }
-        #awardResultDisplay .winner { color: var(--primary-blue); font-weight: bold; font-size: 1.2em; }
-        #awardResultDisplay .winner i { color: var(--gold-color); margin-inline-end: 5px; }
-
-        /* --- MODAL DIALOG Styling (Unchanged) --- */
-        .modal-overlay { position: fixed; inset-block-start: 0; inset-inline-start: 0; inline-size: 100%; block-size: 100%; background-color: var(--modal-overlay); display: flex; justify-content: center; align-items: center; z-index: 1000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease, visibility 0s linear 0.3s; }
-        .modal-overlay.visible { opacity: 1; visibility: visible; transition: opacity 0.3s ease; }
-        .modal-content { background-color: var(--white); padding: 0; border-radius: 8px; box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2); max-inline-size: 600px; inline-size: 90%; transform: scale(0.9); transition: transform 0.3s ease; max-block-size: 90vh; display: flex; flex-direction: column; overflow: hidden; }
-        .modal-overlay.visible .modal-content { transform: scale(1); }
-        .modal-header { padding: 15px 25px; border-block-end: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-        .modal-header h3 { margin: 0; color: var(--primary-blue); font-size: 1.3em; }
-        .modal-header-actions { margin-inline-start: auto; }
-        .modal-body { padding: 20px 25px; overflow-y: auto; flex-grow: 1; }
-        .modal-content p { margin-block-end: 15px; line-height: 1.7; }
-        .modal-actions { padding: 15px 25px; text-align: end; flex-shrink: 0; border-block-start: 1px solid var(--border-color); background-color: #f8f9fa; }
-        .modal-actions button { margin-inline-start: 10px; margin-block-end: 0; }
-        .modal-content label { margin-block-end: 5px; font-size: 0.95em; }
-        .modal-content input[type="text"], .modal-content input[type="search"], .modal-content select { margin-block-end: 10px; }
-
-        /* View Members Modal Specifics (Unchanged) */
-        #modal-member-list-display { padding: 0; margin: 0; max-block-size: 400px; overflow-y: auto; }
-        #modal-member-list-display li { background-color: var(--white); padding: 8px 12px; margin-block-end: 5px; border: 1px solid var(--border-color); border-radius: 4px; display: flex; justify-content: space-between; align-items: center; transition: background-color 0.2s ease; }
-        #modal-member-list-display li:hover { background-color: #f1f1f1; }
-        #modal-member-list-display li span.member-name { flex-grow: 1; margin-inline-end: 10px; }
-        #modal-member-list-display li .edit-controls input[type="text"] { inline-size: auto; flex-grow: 1; margin-inline-end: 5px; padding: 6px 8px; font-size: 0.95rem; margin-block-end: 0; }
-        #modal-member-list-display .view-controls, #modal-member-list-display .edit-controls { gap: 3px; }
-        #modal-member-list-display li.editing .view-controls { opacity: 0; max-block-size: 0; display: none; }
-        #modal-member-list-display li.editing .edit-controls { display: flex; opacity: 1; max-block-size: 50px; inline-size: 100%; }
-        #modal-member-list-display li.editing .member-name { display: none; }
-        #modal-member-list-display .edit-controls { background-color: transparent; padding: 0; margin: 0; border: none; }
-
-        /* Schedule Modal Specifics (Unchanged) */
-        #modal-schedule-member-list { max-block-size: 300px; overflow-y: auto; border: 1px solid var(--border-color); padding: 10px; border-radius: 4px; margin-block-start: 10px; }
-        #modal-schedule-member-list label { display: block; margin-block-end: 5px; font-weight: normal; cursor: pointer; padding: 5px; border-radius: 3px; transition: background-color 0.2s; }
-        #modal-schedule-member-list label:hover { background-color: #e9ecef; }
-        #modal-schedule-member-list input[type="checkbox"] { margin-inline-end: 8px; }
-        #modal-schedule-member-list label.hidden { display: none; }
-
-        /* Utility Classes (Unchanged) */
-        .hidden { display: none !important; }
-        .visually-hidden { position: absolute; inline-size: 1px; block-size: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
-
-        /* Print Styles (Unchanged) */
-        @media print { /* ... unchanged ... */ }
+        body.dark-mode {
+            --bg-color: #212529; --text-color: #e9ecef; --card-bg: #343a40;
+            --header-bg: #212529; --header-text: #fff; --accent-color: #0d6efd;
+            --border-color: #495057; --input-border: #6c757d; --highlight-bg: #495057;
+            --danger-color: #dc3545; --warning-color: #ffc107; --success-color: #198754;
+            --info-color: #0dcaf0; --revision-color: #a97be6;
+            --priority-high-bg: #58151c; --priority-high-text: #f8d7da;
+            --priority-medium-bg: #665100; --priority-medium-text: #fff3cd;
+            --priority-low-bg: #0c3014; --priority-low-text: #d4edda;
+            --archived-row-bg: #495057; --link-color: #0d6efd;
+            --focus-ring-color: rgba(13, 110, 253, 0.35);
+            --shadow-sm: 0 1px 2px rgba(0,0,0,0.2); --shadow-md: 0 4px 6px rgba(0,0,0,0.3);
+            --tag-bg: #5a6268; --tag-text: #e9ecef;
+            --selected-row-bg: color-mix(in srgb, var(--accent-color) 25%, transparent);
+            --loading-overlay-bg: rgba(40, 40, 40, 0.8);
+            --menu-bg: var(--card-bg); --menu-shadow: var(--shadow-md); --menu-border: var(--border-color); --menu-item-hover-bg: var(--highlight-bg);
+        }
+        /* --- GENERAL --- */
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        html { scroll-behavior: smooth; }
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif; background-color: var(--bg-color); color: var(--text-color); line-height: 1.6; transition: background-color 0.3s, color 0.3s; font-size: 16px; position: relative; }
+        *:focus-visible { outline: 2px solid var(--accent-color); outline-offset: 2px; box-shadow: 0 0 0 3px var(--focus-ring-color); border-radius: 5px; }
+        *:focus:not(:focus-visible) { outline: none; }
+        /* --- Loading Overlay --- */
+        #loadingOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--loading-overlay-bg); backdrop-filter: blur(3px); display: flex; justify-content: center; align-items: center; z-index: 2000; opacity: 0; visibility: hidden; transition: opacity 0.3s, visibility 0.3s; }
+        #loadingOverlay.show { opacity: 1; visibility: visible; }
+        .spinner { width: 50px; height: 50px; border: 5px solid var(--highlight-bg); border-top-color: var(--accent-color); border-radius: 50%; animation: spin 1s linear infinite; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        /* --- Basic Element Styling --- */
+        button, input, select, textarea { font-family: inherit; font-size: 1rem; background-color: var(--card-bg); color: var(--text-color); border: 1px solid var(--input-border); border-radius: 5px; padding: 10px 15px; transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out; }
+        input:focus, select:focus, textarea:focus { border-color: var(--accent-color); box-shadow: 0 0 0 3px var(--focus-ring-color); outline: none; }
+        input[type="checkbox"] { width: 1.1em; height: 1.1em; padding: 0; vertical-align: middle; margin-right: 5px; accent-color: var(--accent-color); }
+        button { cursor: pointer; background-color: var(--accent-color); color: white; border: none; font-weight: 500; transition: background-color 0.2s ease, opacity 0.2s, box-shadow 0.2s; padding: 10px 20px; display: inline-flex; align-items: center; gap: var(--button-gap); border-radius: 5px; }
+        button:hover { background-color: color-mix(in srgb, var(--accent-color), black 10%); box-shadow: var(--shadow-sm); }
+        button:active { background-color: color-mix(in srgb, var(--accent-color), black 20%); }
+        button.danger { background-color: var(--danger-color); } button.danger:hover { background-color: color-mix(in srgb, var(--danger-color), black 10%); } button.danger:active { background-color: color-mix(in srgb, var(--danger-color), black 20%); }
+        button.warning { background-color: var(--warning-color); color: #333; } button.warning:hover { background-color: color-mix(in srgb, var(--warning-color), black 10%); } button.warning:active { background-color: color-mix(in srgb, var(--warning-color), black 20%); }
+        button.secondary { background-color: #6c757d; } button.secondary:hover { background-color: color-mix(in srgb, #6c757d, black 10%); } button.secondary:active { background-color: color-mix(in srgb, #6c757d, black 20%); }
+        button.revision { background-color: var(--revision-color); } button.revision:hover { background-color: color-mix(in srgb, var(--revision-color), black 10%); } button.revision:active { background-color: color-mix(in srgb, var(--revision-color), black 20%); }
+        button.info { background-color: var(--info-color); color: white; } button.info:hover { background-color: color-mix(in srgb, var(--info-color), black 10%); } button.info:active { background-color: color-mix(in srgb, var(--info-color), black 20%); }
+        button:disabled { cursor: not-allowed; opacity: 0.65; box-shadow: none; }
+        /* --- Layout & Sections --- */
+        header { background: var(--header-bg); color: var(--header-text); padding: calc(var(--padding-base)*0.8) calc(var(--padding-base)*1.5); display: flex; justify-content: space-between; align-items: center; position: sticky; top: 0; z-index: 1000; box-shadow: var(--shadow-sm); }
+        header h1 { margin: 0; font-size: 1.4rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .header-controls { display: flex; align-items: center; gap: 15px; }
+        #themeToggleBtn { font-size: 1.3rem; background: none; border: none; color: var(--header-text); cursor: pointer; padding: 5px; line-height: 1; }
+        .nav-menu { display: flex; gap: 10px; }
+        .nav-menu a { color: var(--header-text); text-decoration: none; font-weight: 500; padding: 8px 12px; border-radius: 5px; transition: background-color 0.2s ease; white-space: nowrap; }
+        .nav-menu a:hover, .nav-menu a.active-link { background-color: rgba(255, 255, 255, 0.15); }
+        .hamburger { display: none; font-size: 28px; cursor: pointer; padding: 5px; background: none; border: none; color: var(--header-text); }
+        main { max-width: 1500px; margin: calc(var(--padding-base)*1.5) auto; padding: calc(var(--padding-base)*1.5); background-color: var(--card-bg); border-radius: 10px; box-shadow: var(--shadow-md); }
+        section { display: none; padding-top: var(--padding-base); }
+        section.active { display: block; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        h2 { margin-bottom: calc(var(--padding-base)*1.25); color: var(--text-color); border-bottom: 1px solid var(--border-color); padding-bottom: calc(var(--padding-base)*0.75); font-weight: 600; font-size: 1.6rem; }
+        /* --- Dashboard --- */
+        .dashboard-stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: calc(var(--padding-base)*1.25); margin-bottom: calc(var(--padding-base)*1.75); }
+        .stat-card { background: var(--card-bg); padding: calc(var(--padding-base)*1.25); border-radius: 8px; text-align: center; border: 1px solid var(--border-color); border-left: 5px solid var(--accent-color); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .stat-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-sm); }
+        .stat-card h3 { margin-bottom: 12px; font-size: 1rem; color: var(--text-color); opacity: 0.9; font-weight: 500; }
+        .stat-card p { font-size: 2rem; font-weight: 600; color: var(--text-color); }
+        .stat-card.pending { border-left-color: var(--warning-color); } .stat-card.in-progress { border-left-color: var(--info-color); } .stat-card.completed { border-left-color: var(--success-color); } .stat-card.delivered { border-left-color: var(--revision-color); }
+        .recent-orders h3 { margin-bottom: var(--padding-base); font-size: 1.2rem; font-weight: 600;}
+        /* --- Forms --- */
+        .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0 calc(var(--padding-base)*1.25); }
+        form label { display: block; margin: var(--padding-base) 0 6px; font-weight: 500; font-size: 0.95rem; }
+        form input, form select, form textarea { width: 100%; margin-bottom: 8px; }
+        .form-group { margin-bottom: var(--padding-base); }
+        .form-group-full { grid-column: 1 / -1; }
+        .error-message { color: var(--danger-color); font-size: 0.88rem; display: none; margin-top: 5px; }
+        form input.invalid, form select.invalid, form textarea.invalid { border-color: var(--danger-color); box-shadow: 0 0 0 3px rgba(220, 53, 69, 0.25); }
+        form button[type="submit"] { width: auto; padding: 12px 30px; margin-top: var(--padding-base); }
+        /* --- List View --- */
+        .list-controls { background-color: var(--highlight-bg); padding: var(--padding-base); border-radius: 8px; margin-bottom: calc(var(--padding-base)*1.25); border: 1px solid var(--border-color); }
+        .filter-area { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: var(--padding-base); align-items: end; margin-bottom: var(--padding-base); }
+        .filter-area label { font-size: 0.9rem; margin-bottom: 5px; display: block; font-weight: 500;}
+        .filter-area input, .filter-area select { width: 100%; padding: 8px 12px; font-size: 0.95rem; }
+        .date-range-filter { display: flex; gap: 15px; align-items: end; }
+        .list-actions { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: var(--padding-base); margin-top: var(--padding-base); padding-top: var(--padding-base); border-top: 1px solid var(--border-color); }
+        .list-actions > div { display: flex; align-items: center; gap: 10px; }
+        .list-actions label { font-weight: 500; }
+        .list-actions button { padding: 8px 18px; font-size: 0.9rem; gap: 6px; }
+        #bulkActionsContainer { padding: 10px; background-color: var(--highlight-bg); border: 1px solid var(--border-color); border-radius: 6px; margin-top: var(--padding-base); display: none; flex-wrap: wrap; gap: 10px; align-items: center; }
+        #bulkActionsContainer.visible { display: flex; }
+        #bulkActionsContainer label { margin-right: 5px; font-weight: 500; font-size: 0.9rem;}
+        #bulkActionsContainer select { padding: 6px 10px; font-size: 0.9rem; width: auto; margin-right: 5px; }
+        #bulkActionsContainer button { font-size: 0.9rem; padding: 6px 12px; gap: 4px;}
+        /* Table Styles */
+        .table-container { overflow-x: auto; margin-top: var(--padding-base); border: 1px solid var(--border-color); border-radius: 8px; }
+        table { width: 100%; border-collapse: separate; border-spacing: 0; margin-top: 0; }
+        th.col-checkbox, td.col-checkbox { width: 45px; text-align: center; padding-left: 10px; padding-right: 10px; }
+        th, td { border-bottom: 1px solid var(--border-color); padding: 12px 14px; text-align: left; vertical-align: top; }
+        th { background-color: var(--highlight-bg); color: var(--text-color); font-weight: 600; cursor: pointer; position: sticky; top: 0; z-index: 2; white-space: nowrap; border-top: 1px solid var(--border-color); }
+        th:first-child { border-top-left-radius: 8px; } th:last-child { border-top-right-radius: 8px; }
+        td.col-price, th.col-price { text-align: right; }
+        td.col-tags { white-space: normal; max-width: 200px; }
+        td.col-link a { color: var(--link-color); text-decoration: none; word-break: break-all;} td.col-link a:hover { text-decoration: underline; } td.col-link .link-icon { font-size: 0.9em; margin-left: 4px; }
+        td.col-notes { max-width: 250px; white-space: normal; }
+        th.th-sorted { background-color: color-mix(in srgb, var(--highlight-bg), black 5%); } body.dark-mode th.th-sorted { background-color: color-mix(in srgb, var(--highlight-bg), white 5%); }
+        th .sort-indicator { font-size: 0.9em; margin-left: 8px; display: inline-block; color: var(--text-color); opacity: 0.6; transition: opacity 0.2s; } th:hover .sort-indicator { opacity: 1; } th .sort-indicator.active { opacity: 1; font-weight: bold; }
+        tbody tr { transition: background-color 0.15s ease; }
+        tbody tr.selected { background-color: var(--selected-row-bg); }
+        tbody tr:last-child td:first-child { border-bottom-left-radius: 8px; } tbody tr:last-child td:last-child { border-bottom-right-radius: 8px; }
+        tbody tr:hover:not(.selected) { background-color: var(--highlight-bg); }
+        tbody tr.archived { background-color: var(--archived-row-bg) !important; opacity: 0.7; font-style: italic; } tbody tr.archived:hover:not(.selected) { opacity: 0.8; }
+        .deadline-soon { background-color: color-mix(in srgb, var(--priority-medium-bg) 70%, transparent) !important; }
+        .deadline-past { background-color: color-mix(in srgb, var(--priority-high-bg) 70%, transparent) !important; }
+        td[data-label="Deadline"] span { font-size: 0.85em; opacity: 0.9; }
+        .status-select, .inline-priority-select { width: auto; padding: 6px 10px; font-size: 0.9rem; border-radius: 5px; margin-left: 5px; vertical-align: middle;}
+        .priority-badge { padding: 4px 10px; border-radius: 15px; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; border: 1px solid transparent;}
+        .priority-High { background-color: var(--priority-high-bg); color: var(--priority-high-text); border-color: color-mix(in srgb, var(--priority-high-text), transparent 50%); }
+        .priority-Medium { background-color: var(--priority-medium-bg); color: var(--priority-medium-text); border-color: color-mix(in srgb, var(--priority-medium-text), transparent 50%);}
+        .priority-Low { background-color: var(--priority-low-bg); color: var(--priority-low-text); border-color: color-mix(in srgb, var(--priority-low-text), transparent 50%);}
+        .tag-badge { display: inline-block; background-color: var(--tag-bg); color: var(--tag-text); padding: 3px 8px; border-radius: 4px; font-size: 0.8rem; margin: 2px; white-space: nowrap; }
+        .action-buttons { white-space: nowrap; display: inline-flex; gap: 5px; align-items: center; }
+        button.action-button { margin-right: 0; padding: 5px 8px; font-size: 0.8rem; gap: 4px; }
+        /* Pagination */
+        #paginationControls { display: flex; justify-content: space-between; align-items: center; padding: var(--padding-base) 0; margin-top: var(--padding-base); border-top: 1px solid var(--border-color); flex-wrap: wrap; gap: var(--padding-base); }
+        #paginationControls .items-per-page { display: flex; align-items: center; gap: 8px; }
+        #paginationControls label { font-size: 0.9rem; margin-right: 5px; font-weight: 500; }
+        #paginationControls select { font-size: 0.9rem; padding: 5px 8px; width: auto; }
+        #paginationControls .page-nav { display: flex; gap: 8px; }
+        #paginationControls .page-nav button { font-size: 0.9rem; padding: 6px 12px; gap: 5px; }
+        #paginationControls #pageInfo { font-size: 0.9rem; font-weight: 500; text-align: center; flex-grow: 1; }
+        /* Reports */
+        .report-filters { background-color: var(--highlight-bg); padding: var(--padding-base); border-radius: 8px; margin-bottom: calc(var(--padding-base)*1.25); border: 1px solid var(--border-color); display: flex; flex-wrap: wrap; gap: var(--padding-base); align-items: end; }
+        .report-filters label { font-size: 0.9rem; margin-bottom: 5px; display: block; font-weight: 500; }
+        .report-filters select, .report-filters input { padding: 8px 12px; font-size: 0.95rem; }
+        .report-filters .date-range-filter { display: flex; gap: 15px; align-items: end; }
+        .report-container { display: grid; grid-template-columns: repeat(auto-fit, minmax(380px, 1fr)); gap: calc(var(--padding-base)*1.25); }
+        .report-box { background: var(--card-bg); padding: calc(var(--padding-base)*1.25); border-radius: 8px; border: 1px solid var(--border-color); display: flex; flex-direction: column; }
+        .report-box h3 { margin-bottom: var(--padding-base); font-size: 1.2rem; font-weight: 600; border-bottom: 1px solid var(--border-color); padding-bottom: calc(var(--padding-base)*0.5); }
+        .report-box .report-content { flex-grow: 1; }
+        .chart-container { position: relative; height: 300px; width: 100%; flex-shrink: 0; }
+        #clientSummaryTableContainer { max-height: 350px; overflow-y: auto; border: 1px solid var(--border-color); border-radius: 5px; margin-top: 10px; }
+        #clientSummaryTable th { position: sticky; top: 0; z-index: 1; cursor: pointer; background-color: var(--highlight-bg); }
+        #clientSummaryTable td { padding: 8px 12px; font-size: 0.9rem; } #clientSummaryTable tr:last-child td { border-bottom: none; }
+        #reportProjectValue ul { list-style: none; padding: 0; margin: 0;}
+        #reportProjectValue li { margin-bottom: 8px; padding-left: 20px; position: relative; font-size: 0.95rem; }
+        #reportProjectValue li span.status-color-dot { position: absolute; left: 0; top: 50%; transform: translateY(-50%); width: 12px; height: 12px; background-color: #ccc; border-radius: 50%; }
+        #reportProjectValue li strong { float: right; font-weight: 600;}
+        #reportProjectValue li.total-value { margin-top: var(--padding-base); padding-top: calc(var(--padding-base)*0.75); border-top: 1px solid var(--border-color); font-weight: bold; }
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 1001; left: 0; top: 0; width: 100%; height: 100%; overflow: auto; background-color: rgba(0, 0, 0, 0.6); backdrop-filter: blur(3px); animation: fadeIn 0.3s ease; }
+        .modal-content { background-color: var(--card-bg); margin: 5% auto; padding: calc(var(--padding-base)*1.75); border: none; width: 90%; max-width: 850px; border-radius: 10px; position: relative; box-shadow: var(--shadow-md); animation: slideIn 0.4s ease; }
+        @keyframes slideIn { from { transform: translateY(-30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        .close-btn { color: var(--text-color); opacity: 0.6; position: absolute; top: calc(var(--padding-base)*0.75); right: var(--padding-base); font-size: 32px; font-weight: bold; cursor: pointer; transition: opacity 0.2s ease; line-height: 1; padding: 0 5px; background: none; border: none;}
+        .close-btn:hover { opacity: 1; }
+        #editForm .form-group { margin-bottom: var(--padding-base); } #editForm h2 { margin-bottom: calc(var(--padding-base)*1.25); } #editForm button { margin-top: 10px; margin-right: 10px; }
+        /* Toast */
+        #toastContainer { position: fixed; bottom: 25px; right: 25px; z-index: 1002; display: flex; flex-direction: column; gap: 12px; }
+        .toast { padding: 15px 25px; border-radius: 8px; color: white; font-weight: 500; min-width: 280px; box-shadow: var(--shadow-md); opacity: 0; transform: translateX(100%); transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.215, 0.610, 0.355, 1); display: flex; align-items: center; gap: 10px;}
+        .toast::before { font-family: "Segoe UI Symbol", sans-serif; font-size: 1.2em; line-height: 1; }
+        .toast.success::before { content: '✔️'; } .toast.error::before { content: '❌'; } .toast.info::before { content: 'ℹ️'; }
+        .toast.show { opacity: 1; transform: translateX(0); }
+        .toast.success { background-color: var(--success-color); } .toast.error { background-color: var(--danger-color); } .toast.info { background-color: var(--info-color); }
+        /* Utilities */
+        .text-center { text-align: center; } .text-right { text-align: right; }
+        .empty-message { text-align: center; padding: 40px 20px; color: var(--text-color); opacity: 0.7; font-style: italic; font-size: 1.1rem; }
+        .empty-message::before { content: '🤷‍♀️'; display: block; font-size: 2.5rem; margin-bottom: 15px; opacity: 0.5; }
+        /* --- RESPONSIVE --- */
+        @media (max-width: 992px) { .form-grid { grid-template-columns: 1fr; gap: 0; } .modal-content { max-width: 600px; } .list-actions { flex-direction: column; align-items: stretch;} #paginationControls { flex-direction: column; align-items: stretch; text-align: center;} #paginationControls .page-nav { justify-content: center;} .report-filters { flex-direction: column; align-items: stretch; gap: 15px;} .report-filters .date-range-filter { flex-direction: column; gap: 15px; align-items: stretch; } .report-box[style*="grid-column: span 2"] { grid-column: span 1; } }
+        @media (max-width: 768px) { body { font-size: 15px; } header { padding: 12px 15px; } header h1 { font-size: 1.1rem; } .header-controls { gap: 8px; } .nav-menu { display: none; flex-direction: column; background: var(--header-bg); position: absolute; top: 58px; right: 10px; width: 200px; padding: 15px; box-shadow: var(--shadow-md); border-radius: 8px; border: 1px solid var(--border-color); border-top: none; } .nav-menu.show { display: flex; } .hamburger { display: block; } main { margin: 15px; padding: 15px; } h2 { font-size: 1.4rem; margin-bottom: 20px; } .filter-area { grid-template-columns: 1fr; gap: 15px; } .date-range-filter { flex-direction: column; gap: 15px; align-items: stretch; } .list-actions button { width: 100%; } .dashboard-stats { grid-template-columns: 1fr; gap: 15px; } .stat-card { padding: 20px; } .stat-card p { font-size: 1.8rem; } .modal-content { width: 95%; margin: 8% auto; padding: 20px; max-width: 95%; } th, td { padding: 10px 8px; font-size: 0.85rem;} th.col-checkbox, td.col-checkbox { padding-left: 8px; padding-right: 8px; width: 35px;} .table-container { border-radius: 6px; } th:first-child { border-top-left-radius: 6px; } th:last-child { border-top-right-radius: 6px; } tbody tr:last-child td:first-child { border-bottom-left-radius: 6px; } tbody tr:last-child td:last-child { border-bottom-right-radius: 6px; } table { min-width: 1100px; } #toastContainer { right: 15px; bottom: 15px; width: calc(100% - 30px); gap: 10px;} .toast { min-width: auto; padding: 12px 20px; } .report-container { grid-template-columns: 1fr; gap: 20px;} .chart-container { height: 280px; } button.action-button { padding: 8px 10px; } /* Removed action dropdown style */ #bulkActionsContainer { flex-direction: column; align-items: stretch; } #bulkActionsContainer div { display: flex; width: 100%; } #bulkActionsContainer div select { flex-grow: 1; } #bulkActionsContainer button { width: 100%; justify-content: center; } }
     </style>
 </head>
 <body>
+    <!-- Loading Overlay -->
+    <div id="loadingOverlay"><div class="spinner"></div></div>
 
-    <!-- MAIN APP (Unchanged Structure) -->
-    <div id="main-app">
-        <div class="container">
-            <h1><i class="fa-solid fa-clipboard-list"></i> Program Piket OSIS</h1>
+    <header>
+        <h1>Manajemen Project NextGen (Firebase)</h1>
+        <div class="header-controls">
+            <button id="themeToggleBtn" title="Toggle Light/Dark Mode">☀️</button>
+            <button class="hamburger" onclick="toggleMenu()" title="Toggle Menu" aria-label="Toggle Menu">☰</button>
+            <nav class="nav-menu" id="navMenu">
+                <a href="#" data-section="dashboardSection" onclick="showSection('dashboardSection', this)">📊 Dashboard</a>
+                <a href="#" data-section="inputSection" onclick="showSection('inputSection', this)">➕ Input Pesanan</a>
+                <a href="#" data-section="listSection" onclick="showSection('listSection', this)">📋 List Pesanan</a>
+                <a href="#" data-section="reportSection" onclick="showSection('reportSection', this)">📈 Laporan</a>
+            </nav>
+        </div>
+    </header>
 
-            <!-- 1. Anggota OSIS Section (Unchanged) -->
-            <div class="section">
-                <h2><i class="fa-solid fa-users"></i> Anggota OSIS</h2>
-                <button id="open-view-members-modal-button" class="info">
-                    <i class="fa-solid fa-address-book"></i> <span class="button-text">Lihat & Kelola Anggota</span>
-                </button>
+    <main>
+        <!-- Dashboard Section -->
+         <section id="dashboardSection" class="active">
+            <h2>Dashboard Utama</h2>
+            <div class="dashboard-stats">
+                <div class="stat-card pending"><h3>Pending</h3><p id="pendingCount">0</p></div>
+                <div class="stat-card in-progress"><h3>In Progress</h3><p id="progressCount">0</p></div>
+                <div class="stat-card completed"><h3>Completed</h3><p id="completedCount">0</p></div>
+                <div class="stat-card delivered"><h3>Delivered</h3><p id="deliveredCount">0</p></div>
+                 <div class="stat-card" style="border-left-color: var(--accent-color);"><h3>Total Nilai Aktif</h3><p id="totalValueActive">Rp 0</p></div>
+            </div>
+            <div class="recent-orders">
+                <h3>⏳ 5 Pesanan Terbaru (Aktif)</h3>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th scope="col">Klien</th><th scope="col">Project</th><th scope="col">Harga</th><th scope="col">Status</th><th scope="col">Prioritas</th></tr></thead>
+                        <tbody id="recentOrdersTable"></tbody>
+                    </table>
+                </div>
+                <p id="noRecentOrdersMsg" class="empty-message" style="display: none;">Belum ada pesanan aktif terbaru.</p>
+            </div>
+        </section>
+
+        <!-- Input Section -->
+        <section id="inputSection">
+            <h2>Input Pesanan Baru</h2>
+            <form id="orderForm" novalidate>
+                <div class="form-grid">
+                    <div class="form-group"> <label for="clientName">Nama Klien</label> <input type="text" id="clientName" placeholder="Masukkan nama klien" required aria-describedby="clientNameError" /> <div class="error-message" id="clientNameError"></div> </div>
+                    <div class="form-group"> <label for="clientContact">Kontak Klien (Email/Telp)</label> <input type="text" id="clientContact" placeholder="Opsional: email@contoh.com / 08xxxx" /> </div>
+                    <div class="form-group"> <label for="projectType">Jenis Project</label> <select id="projectType" required aria-describedby="projectTypeError"> <option value="">-- Pilih Jenis Project --</option> <option value="Logo">Logo</option> <option value="Website">Website</option> <option value="Artikel">Artikel</option> <option value="Video">Video</option> <option value="Cerpen">Cerpen</option> <option value="Poster">Poster</option> <option value="Aplikasi Mobile">Aplikasi Mobile</option> <option value="Video Animasi">Video Animasi</option> <option value="Lainnya">Lainnya</option> </select> <div class="error-message" id="projectTypeError"></div> </div>
+                    <div class="form-group"> <label for="projectPrice">Harga Project (Rp)</label> <input type="number" id="projectPrice" placeholder="Contoh: 500000" min="0" step="1000" aria-describedby="projectPriceError" /> <div class="error-message" id="projectPriceError"></div> </div>
+                    <div class="form-group"> <label for="orderDate">Tanggal Order</label> <input type="date" id="orderDate" required aria-describedby="orderDateError"/> <div class="error-message" id="orderDateError"></div> </div>
+                    <div class="form-group"> <label for="deadline">Deadline</label> <input type="date" id="deadline" required aria-describedby="deadlineError"/> <div class="error-message" id="deadlineError"></div> </div>
+                    <div class="form-group"> <label for="priority">Prioritas</label> <select id="priority" required aria-describedby="priorityError"> <option value="Medium">Sedang</option> <option value="High">Tinggi</option> <option value="Low">Rendah</option> </select> <div class="error-message" id="priorityError"></div> </div>
+                    <div class="form-group"> <label for="attachmentLink">Link Lampiran/Referensi</label> <input type="url" id="attachmentLink" placeholder="Opsional: https://..." aria-describedby="attachmentLinkError"/> <div class="error-message" id="attachmentLinkError"></div> </div>
+                    <div class="form-group form-group-full"> <label for="projectTags">Tags (Pisahkan dengan koma)</label> <input type="text" id="projectTags" placeholder="Opsional: Revisi Mayor, Desain Cetak, Prioritas Utama" /> </div>
+                    <div class="form-group form-group-full"> <label for="notes">Catatan / Brief</label> <textarea id="notes" placeholder="Detail project, revisi, dll. Tips: Gunakan '- [ ]' atau '- [x]' untuk checklist." rows="5"></textarea> </div>
+                </div>
+                <button type="submit"><span>➕</span> Tambah Pesanan</button>
+            </form>
+        </section>
+
+        <!-- List Section -->
+        <section id="listSection">
+            <h2>List Pesanan</h2>
+            <div class="list-controls">
+                <div class="filter-area">
+                    <div> <label for="searchInput">🔍 Cari</label> <input type="text" id="searchInput" placeholder="Klien / Project / Kontak / Tags..." > </div>
+                    <div> <label for="statusFilter">🚦 Status</label> <select id="statusFilter" > <option value="">-- Semua Status --</option> <option value="Pending">Pending</option> <option value="In Progress">In Progress</option> <option value="Completed">Completed</option> <option value="Delivered">Delivered</option> </select> </div>
+                    <div> <label for="priorityFilter">🚩 Prioritas</label> <select id="priorityFilter" > <option value="">-- Semua Prioritas --</option> <option value="High">Tinggi</option> <option value="Medium">Sedang</option> <option value="Low">Rendah</option> </select> </div>
+                    <div> <label for="tagFilter">🏷️ Filter Tag</label> <input type="text" id="tagFilter" placeholder="Masukkan satu tag..." > </div>
+                    <div class="date-range-filter"> <div> <label for="startDateFilter">🗓️ Dari Tgl Order</label> <input type="date" id="startDateFilter" > </div> <div> <label for="endDateFilter">🗓️ Sampai Tgl Order</label> <input type="date" id="endDateFilter" > </div> </div>
+                </div>
+                 <div class="list-actions"> <div> <label for="showArchived">Tampilkan Arsip:</label> <input type="checkbox" id="showArchived"> </div> <button onclick="exportToCSV()" title="Ekspor data yang tampil di tabel ke CSV"><span>📄</span> Ekspor ke CSV</button> </div>
             </div>
 
-            <!-- 2. Input Jadwal Piket (Unchanged) -->
-            <div class="section">
-                <h2><i class="fa-solid fa-calendar-days"></i> Jadwal Piket Mingguan</h2>
-                <label for="scheduleDay">Pilih Hari:</label>
-                <select id="scheduleDay">
-                    <option value="Senin">Senin</option> <option value="Selasa">Selasa</option> <option value="Rabu">Rabu</option> <option value="Kamis">Kamis</option> <option value="Jumat">Jumat</option> <option value="Sabtu">Sabtu</option> <option value="Minggu">Minggu</option>
-                </select>
-                <button id="open-edit-schedule-modal-button" class="info">
-                    <i class="fa-solid fa-users-gear"></i> <span class="button-text">Pilih/Ubah Anggota Piket Hari Ini</span>
-                </button>
-                <button id="clear-schedule-button" class="secondary">
-                    <i class="fa-solid fa-eraser"></i> <span class="button-text">Kosongkan Jadwal Hari Ini</span> <span class="spinner"></span>
-                </button>
-                <h3><i class="fa-solid fa-calendar-check"></i> Jadwal Tersimpan:</h3>
-                <div id="scheduleDisplay"></div>
-            </div>
-
-            <!-- 3. Input Kehadiran Piket (Unchanged Structure, JS modified) -->
-            <div class="section">
-                 <h2><i class="fa-solid fa-user-check"></i> Catat Kehadiran Piket</h2>
-                 <div class="date-navigation no-print">
-                     <button id="prev-day-button" class="secondary small-btn" aria-label="Hari Sebelumnya"><i class="fa-solid fa-chevron-left"></i></button>
-                     <input type="date" id="attendanceDate" aria-label="Tanggal Piket"/>
-                     <button id="next-day-button" class="secondary small-btn" aria-label="Hari Berikutnya"><i class="fa-solid fa-chevron-right"></i></button>
-                 </div>
-                 <button id="show-attendance-form-button">
-                     <i class="fa-solid fa-pen-to-square"></i> <span class="button-text">Pilih Tanggal & Tampilkan Form</span> <span class="spinner"></span>
-                 </button>
-                 <div id="attendanceMarking">
-                     <h3>Tandai Kehadiran untuk <span id="selectedDateDisplay"></span> (<span id="selectedDayDisplay"></span>):</h3>
-                     <p id="noScheduleMessage" style="display:none; color: orange;">Tidak ada jadwal piket untuk hari ini.</p>
-                     <div id="attendanceCheckboxes">
-                         <!-- Checkboxes, reason inputs, AND swap buttons will be generated here -->
-                     </div>
-                     <button id="saveAttendanceButton" style="display:none;"><i class="fa-solid fa-save"></i> <span class="button-text">Simpan Kehadiran</span> <span class="spinner"></span></button>
-                     <div id="attendanceStatus"></div>
-                 </div>
-            </div>
-
-             <!-- 4. Penghargaan Bulanan (Unchanged) -->
-             <div class="section" id="monthlyAwardSection">
-                 <h2><i class="fa-solid fa-award"></i> Penghargaan Bulanan</h2>
-                 <label for="awardMonthSelect">Pilih Bulan untuk Penghargaan:</label>
-                 <select id="awardMonthSelect">
-                     <option value="">-- Pilih Bulan --</option>
-                 </select>
-                 <button id="calculateAwardButton" class="success">
-                     <i class="fa-solid fa-calculator"></i> <span class="button-text">Tentukan Penerima Penghargaan</span> <span class="spinner"></span>
-                 </button>
-                 <div id="awardResultDisplay">
-                     <p><i>Pilih bulan dan klik tombol.</i></p>
-                 </div>
+             <div id="bulkActionsContainer">
+                 <div> <label for="bulkStatusChange">Ubah Status (<span id="selectedCount">0</span> terpilih):</label> <select id="bulkStatusChange" title="Pilih status baru untuk item aktif terpilih"> <option value="">-- Pilih Status --</option> <option value="Pending">Pending</option> <option value="In Progress">In Progress</option> <option value="Completed">Completed</option> <option value="Delivered">Delivered</option> </select> <button id="bulkChangeStatusBtn" class="secondary" disabled title="Terapkan perubahan status ke item aktif terpilih"><span>🔄</span> Terapkan</button> </div>
+                 <div> <button id="bulkArchiveBtn" class="warning" disabled title="Arsipkan item aktif terpilih"><span>📁</span> Arsipkan Terpilih</button> <button id="bulkDeleteBtn" class="danger" disabled title="Hapus permanen item arsip terpilih"><span>🗑️</span> Hapus Arsip Terpilih</button> </div>
              </div>
 
-            <!-- 5. Laporan Partisipasi (Unchanged) -->
-            <div class="section" id="reportSection">
-                <h2><i class="fa-solid fa-chart-line"></i> Laporan Partisipasi</h2>
-                <button id="generate-report-button"><i class="fa-solid fa-file-alt"></i> <span class="button-text">Buat Laporan</span> <span class="spinner"></span></button>
-                <button id="export-csv-button" class="info small-btn no-print"><i class="fa-solid fa-file-csv"></i> <span class="button-text">Ekspor CSV</span> <span class="spinner"></span></button>
-                <small>Laporan didasarkan pada data kehadiran di Firestore.</small>
-                <div id="reportDisplay"></div>
+            <div class="table-container">
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col" class="col-checkbox"><input type="checkbox" id="selectAllCheckbox" title="Pilih Semua di Halaman Ini"></th>
+                            <th scope="col" onclick="setSort('clientName')">Klien <span class="sort-indicator" data-col="clientName"></span></th>
+                            <th scope="col">Kontak</th>
+                            <th scope="col" onclick="setSort('projectType')">Project <span class="sort-indicator" data-col="projectType"></span></th>
+                            <th scope="col" onclick="setSort('projectPrice')" class="col-price">Harga <span class="sort-indicator" data-col="projectPrice"></span></th>
+                            <th scope="col" onclick="setSort('orderDate')">Order <span class="sort-indicator" data-col="orderDate"></span></th>
+                            <th scope="col" onclick="setSort('deadline')">Deadline <span class="sort-indicator" data-col="deadline"></span></th>
+                            <th scope="col" onclick="setSort('priority')">Prioritas <span class="sort-indicator" data-col="priority"></span></th>
+                            <th scope="col">Status</th>
+                            <th scope="col">Tags</th>
+                            <th scope="col">Link</th>
+                            <th scope="col">Catatan</th>
+                            <th scope="col">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="orderTable"></tbody>
+                </table>
             </div>
+            <p id="noOrdersMsg" class="empty-message" style="display: none;">Tidak ada pesanan yang cocok dengan filter Anda.</p>
 
-            <!-- 6. Data Management Section (Unchanged) -->
-            <div class="section no-print">
-                <h2><i class="fa-solid fa-database"></i> Manajemen Data</h2>
-                <div>
-                    <h3><i class="fa-solid fa-copy"></i> Backup Data (dari Memori)</h3>
-                    <p>Backup ini hanya menyalin data terakhir dimuat.</p>
-                    <textarea id="backupDataArea" rows="5" readonly placeholder="Klik 'Backup Data'..."></textarea>
-                    <button id="backup-button" class="info"><i class="fa-solid fa-clone"></i> <span class="button-text">Backup Data</span> <span class="spinner"></span></button>
-                </div>
-                <div style="margin-block-start: 20px;">
-                    <h3><i class="fa-solid fa-upload"></i> Restore Data Lokal ke Firestore</h3>
-                    <p><strong>PERHATIAN:</strong> Ini akan menimpa data di Firestore.</p>
-                    <textarea id="restoreDataArea" rows="5" placeholder="Tempel data backup (JSON)..."></textarea>
-                    <button id="restore-button" class="warning"><i class="fa-solid fa-cloud-upload-alt"></i> <span class="button-text">Restore Data</span> <span class="spinner"></span></button>
-                </div>
-                <div style="margin-block-start: 30px; border-block-start: 1px dashed var(--danger-red); padding-block-start: 20px;">
-                    <h3><i class="fa-solid fa-triangle-exclamation"></i> Reset Aplikasi</h3>
-                    <p><strong>PERHATIAN BESAR:</strong> Ini akan menghapus SEMUA data di Firestore.</p>
-                    <button id="reset-button" class="danger"><i class="fa-solid fa-bomb"></i> <span class="button-text">Reset Semua Data Aplikasi</span> <span class="spinner"></span></button>
-                </div>
-            </div>
+             <div id="paginationControls">
+                 <div class="items-per-page"> <label for="itemsPerPageSelect">Item per halaman:</label> <select id="itemsPerPageSelect" title="Jumlah item yang ditampilkan per halaman"> <option value="10">10</option> <option value="15">15</option> <option value="25">25</option> <option value="50">50</option> </select> </div>
+                 <div id="pageInfo">Halaman 1 dari 1</div>
+                 <div class="page-nav"> <button id="prevPageBtn" disabled title="Halaman Sebelumnya"><span>◀️</span> Sebelumnya</button> <button id="nextPageBtn" disabled title="Halaman Berikutnya"><span>▶️</span> Berikutnya</button> </div>
+             </div>
+        </section>
 
-        </div> <!-- End .container -->
-    </div> <!-- End #main-app -->
+        <!-- Report Section -->
+         <section id="reportSection">
+             <h2>Laporan Visual (Pesanan Aktif)</h2>
+             <div class="report-filters"> <div> <label for="reportProjectTypeFilter">Filter Jenis Project:</label> <select id="reportProjectTypeFilter" title="Filter laporan berdasarkan jenis project"> <option value="">-- Semua Jenis Project --</option> </select> </div> <div class="date-range-filter"> <div> <label for="reportStartDateFilter">Dari Tgl Order:</label> <input type="date" id="reportStartDateFilter" title="Filter laporan dari tanggal order ini"> </div> <div> <label for="reportEndDateFilter">Sampai Tgl Order:</label> <input type="date" id="reportEndDateFilter" title="Filter laporan sampai tanggal order ini"> </div> </div> <button id="resetReportFiltersBtn" class="secondary" title="Hapus filter laporan"><span>🔄</span> Reset Filter</button> </div>
+             <div class="report-container"> <div class="report-box"> <h3>📊 Distribusi Status</h3> <div class="report-content"> <div class="chart-container"> <canvas id="statusChart"></canvas> </div> <div id="reportProjectStatus"></div> </div> </div> <div class="report-box"> <h3>🏗️ Jumlah per Jenis Project</h3> <div class="report-content"> <div class="chart-container"> <canvas id="projectTypeChart"></canvas> </div> <div id="reportProjectType"></div> </div> </div> <div class="report-box"> <h3>💰 Total Nilai per Status</h3> <div class="report-content"> <div id="reportProjectValue"></div> </div> </div> <div class="report-box"> <h3>👥 Ringkasan Klien (Top 10 by Value)</h3> <div class="report-content"> <div id="clientSummaryTableContainer"> <table id="clientSummaryTable"> <thead> <tr> <th scope="col" onclick="sortClientTable(0)" title="Urutkan berdasarkan Nama Klien">Klien</th> <th scope="col" onclick="sortClientTable(1)" title="Urutkan berdasarkan Jumlah Order">Jumlah</th> <th scope="col" onclick="sortClientTable(2)" title="Urutkan berdasarkan Total Nilai">Total Nilai</th> </tr> </thead> <tbody></tbody> </table> </div> </div> </div> <div class="report-box" style="grid-column: span 2;"> <h3>📈 Tren Order Masuk per Bulan</h3> <div class="report-content"> <div class="chart-container" style="height: 350px;"> <canvas id="trendChart"></canvas> </div> </div> </div> </div>
+             <div class="report-box" style="margin-top: 25px;"> <h3>🔢 Total Keseluruhan (Sesuai Filter)</h3> <p><b>Total Pesanan Aktif:</b> <span id="reportTotalActiveOrders">0</span></p> <p><b>Total Nilai Aktif:</b> <span id="reportTotalActiveValue">Rp 0</span></p> <p><b>Total Pesanan Diarsipkan (Global):</b> <span id="reportTotalArchivedOrders">0</span></p> </div>
+        </section>
 
-    <!-- MODAL DIALOGS -->
-    <div id="view-members-modal" class="modal-overlay no-print"> /* ... (unchanged) ... */ <div class="modal-content"><div class="modal-header"><h3><i class="fa-solid fa-address-book"></i> Daftar Anggota OSIS</h3><div class="modal-header-actions"><button id="modal-open-add-member-button" class="success small-btn"><i class="fa-solid fa-user-plus"></i> Tambah Baru</button></div></div><div class="modal-body"><div class="search-container"><i class="fa-solid fa-magnifying-glass search-icon"></i><input type="search" id="modal-member-search" placeholder="Cari anggota..." aria-label="Cari Anggota dalam Modal"></div><ul id="modal-member-list-display"></ul></div><div class="modal-actions"><button id="modal-close-view-members" class="secondary"><i class="fa-solid fa-times"></i> Tutup</button></div></div></div>
-    <div id="add-member-modal" class="modal-overlay no-print"> /* ... (unchanged) ... */ <div class="modal-content"><div class="modal-header"><h3><i class="fa-solid fa-user-plus"></i> Tambah Anggota Baru</h3></div><div class="modal-body"><label for="modal-new-member-name">Nama Lengkap Anggota:</label><input type="text" id="modal-new-member-name" placeholder="Masukkan nama lengkap..." /></div><div class="modal-actions"><button id="modal-cancel-add-member" class="secondary"><i class="fa-solid fa-times"></i> Batal</button><button id="modal-save-member-button"><i class="fa-solid fa-save"></i> <span class="button-text">Simpan Anggota</span> <span class="spinner"></span></button></div></div></div>
-    <div id="edit-schedule-modal" class="modal-overlay no-print"> /* ... (unchanged) ... */ <div class="modal-content"><div class="modal-header"><h3 id="modal-schedule-title"><i class="fa-solid fa-users-gear"></i> Pilih Anggota Piket</h3></div><div class="modal-body"><div class="search-container"><i class="fa-solid fa-magnifying-glass search-icon"></i><input type="search" id="modal-schedule-search" placeholder="Cari anggota..." aria-label="Cari Anggota dalam Modal Jadwal"></div><div id="modal-schedule-member-list"></div></div><div class="modal-actions"><button id="modal-cancel-edit-schedule" class="secondary"><i class="fa-solid fa-times"></i> Batal</button><button id="modal-confirm-schedule-button" class="success"><i class="fa-solid fa-check"></i> <span class="button-text">Simpan Jadwal Hari Ini</span> <span class="spinner"></span></button></div></div></div>
-    <div id="confirmation-modal" class="modal-overlay no-print"> /* ... (unchanged) ... */ <div class="modal-content"><div class="modal-header"><h3 id="modal-title">Konfirmasi</h3></div><div class="modal-body"><p id="modal-message">Apakah Anda yakin?</p></div><div class="modal-actions"><button id="modal-cancel-button" class="secondary"><i class="fa-solid fa-times"></i> Batal</button><button id="modal-confirm-button" class="danger"><i class="fa-solid fa-check"></i> <span class="button-text">Ya, Lanjutkan</span> <span class="spinner"></span></button></div></div></div>
-
-    <!-- NEW: Modal Tukar Tugas -->
-    <div id="swap-duty-modal" class="modal-overlay no-print">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="swap-modal-title"><i class="fa-solid fa-right-left"></i> Tukar Tugas Piket</h3>
-            </div>
-            <div class="modal-body">
-                <p>Anda akan mencatat pertukaran tugas untuk:</p>
-                <p>Tanggal: <strong id="swap-modal-date"></strong></p>
-                <p>Anggota Asli: <strong id="swap-modal-original-member"></strong></p>
-                <hr style="margin: 15px 0; border: none; border-block-start: 1px solid var(--border-color);">
-                <label for="swap-modal-substitute-select">Pilih Anggota Pengganti:</label>
-                <select id="swap-modal-substitute-select">
-                    <option value="">-- Pilih Pengganti --</option>
-                    <!-- Opsi anggota pengganti akan di-generate JS -->
-                </select>
-                <label for="swap-modal-reason">Alasan Pertukaran (Opsional):</label>
-                <input type="text" id="swap-modal-reason" placeholder="Misal: Sakit, Izin acara keluarga">
-            </div>
-            <div class="modal-actions">
-                <button id="modal-cancel-swap-duty" class="secondary">
-                    <i class="fa-solid fa-times"></i> Batal
-                </button>
-                <button id="modal-confirm-swap-duty" class="swap"> <!-- Use swap color -->
-                    <i class="fa-solid fa-check"></i>
-                    <span class="button-text">Simpan Pertukaran</span>
-                    <span class="spinner"></span>
-                </button>
-            </div>
-        </div>
-    </div>
+        <!-- Edit Modal -->
+         <div id="editModal" class="modal"> <div class="modal-content"> <button class="close-btn" onclick="closeEditModal()" title="Tutup" aria-label="Tutup">×</button> <h2>✏️ Edit Pesanan</h2> <form id="editForm" novalidate> <input type="hidden" id="editId"> <div class="form-grid"> <div class="form-group"> <label for="editClientName">Nama Klien</label> <input type="text" id="editClientName" required aria-describedby="editClientNameError"/> <div class="error-message" id="editClientNameError"></div> </div> <div class="form-group"> <label for="editClientContact">Kontak Klien (Email/Telp)</label> <input type="text" id="editClientContact" /> </div> <div class="form-group"> <label for="editProjectType">Jenis Project</label> <select id="editProjectType" required aria-describedby="editProjectTypeError"> <option value="">-- Pilih Jenis Project --</option> <option value="Logo">Logo</option> <option value="Website">Website</option> <option value="Artikel">Artikel</option> <option value="Video">Video</option> <option value="Cerpen">Cerpen</option> <option value="Poster">Poster</option> <option value="Aplikasi Mobile">Aplikasi Mobile</option> <option value="Video Animasi">Video Animasi</option> <option value="Lainnya">Lainnya</option> </select> <div class="error-message" id="editProjectTypeError"></div> </div> <div class="form-group"> <label for="editProjectPrice">Harga Project (Rp)</label> <input type="number" id="editProjectPrice" min="0" step="1000" aria-describedby="editProjectPriceError"/> <div class="error-message" id="editProjectPriceError"></div> </div> <div class="form-group"> <label for="editOrderDate">Tanggal Order</label> <input type="date" id="editOrderDate" required aria-describedby="editOrderDateError"/> <div class="error-message" id="editOrderDateError"></div> </div> <div class="form-group"> <label for="editDeadline">Deadline</label> <input type="date" id="editDeadline" required aria-describedby="editDeadlineError"/> <div class="error-message" id="editDeadlineError"></div> </div> <div class="form-group"> <label for="editPriority">Prioritas</label> <select id="editPriority" required aria-describedby="editPriorityError"> <option value="High">Tinggi</option> <option value="Medium">Sedang</option> <option value="Low">Rendah</option> </select> <div class="error-message" id="editPriorityError"></div> </div> <div class="form-group"> <label for="editStatus">Status</label> <select id="editStatus" required> <option value="Pending">Pending</option> <option value="In Progress">In Progress</option> <option value="Completed">Completed</option> <option value="Delivered">Delivered</option> </select> </div> <div class="form-group"> <label for="editAttachmentLink">Link Lampiran/Referensi</label> <input type="url" id="editAttachmentLink" aria-describedby="editAttachmentLinkError"/> <div class="error-message" id="editAttachmentLinkError"></div> </div> <div class="form-group"> <label for="editProjectTags">Tags (Pisahkan dengan koma)</label> <input type="text" id="editProjectTags" /> </div> <div class="form-group form-group-full"> <label for="editNotes">Catatan / Brief</label> <textarea id="editNotes" rows="5"></textarea> </div> </div> <button type="submit"><span>💾</span> Simpan Perubahan</button> <button type="button" class="secondary" onclick="closeEditModal()"><span>❌</span> Batal</button> </form> </div> </div>
+    </main>
 
 
-    <!-- Toastify JS CDN -->
-    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+    <div id="toastContainer"></div>
 
-    <!-- Script ES Module (v9) -->
-    <script type="module">
-        /***********************************************************************
-         *     1) IMPORT DARI FIREBASE (Unchanged)                           *
-         ***********************************************************************/
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-app.js";
-        import { getFirestore, collection, doc, getDocs, setDoc, addDoc, updateDoc, deleteDoc, writeBatch } from "https://www.gstatic.com/firebasejs/9.17.2/firebase-firestore.js";
+    <script>
+    // --- Firebase Configuration ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyDms1ruwFRJQ8x61-R9twm1s9YTgIAyhIs",
+        authDomain: "manajemen-project-3d7dc.firebaseapp.com",
+        projectId: "manajemen-project-3d7dc",
+        storageBucket: "manajemen-project-3d7dc.firebasestorage.app",
+        messagingSenderId: "152522315633",
+        appId: "1:152522315633:web:7e49284c953cbc0fd3c8d0"
+    };
 
-        /***********************************************************************
-         *           2) KONFIGURASI FIREBASE (Unchanged)                      *
-         ***********************************************************************/
-        const firebaseConfig = {
-            apiKey: "AIzaSyAsBHJoii6RBGrslUH31ix1AyLheRm6HS4",
-            authDomain: "piketosis.firebaseapp.com",
-            projectId: "piketosis",
-            storageBucket: "piketosis.firebasestorage.app",
-            messagingSenderId: "341698253309",
-            appId: "1:341698253309:web:a5ea2d83768348a7f9c994",
-        };
-        const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
+    // --- Firebase Initialization ---
+    let db; let ordersCollection;
+    try { firebase.initializeApp(firebaseConfig); db = firebase.firestore(); ordersCollection = db.collection("orders"); }
+    catch (e) { console.error("Firebase initialization failed:", e); alert("Gagal menginisialisasi koneksi database."); }
 
-        /***********************************************************************
-         *     3) VARIABEL GLOBAL DAN DOM REFERENCES (Added Swap Modal Refs)   *
-         ***********************************************************************/
-        const daysInIndonesian = ["Minggu", "Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu"];
-        const monthNamesIndonesian = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
-        let members = [];
-        let schedule = {};
-        let attendance = {};
-        let currentConfirmationCallback = null;
+    // --- STATE & INITIALIZATION ---
+    let orders = [];
+    let currentSort = { column: 'orderDate', direction: 'desc' };
+    let statusChartInstance, projectTypeChartInstance, trendChartInstance = null;
+    let filterDebounceTimer = null;
+    let currentPage = 1; let itemsPerPage = 15;
+    let selectedOrderIds = new Set();
+    let clientReportSort = { column: 2, direction: 'desc' };
+    // Removed: let currentOpenMenu = null;
 
-        // DOM References (Main Page - Unchanged)
-        const mainApp = document.getElementById('main-app');
-        const openViewMembersModalButton = document.getElementById('open-view-members-modal-button');
-        const scheduleDaySelect = document.getElementById('scheduleDay');
-        const openEditScheduleModalButton = document.getElementById('open-edit-schedule-modal-button');
-        const scheduleDisplay = document.getElementById('scheduleDisplay');
-        const clearScheduleButton = document.getElementById('clear-schedule-button');
-        const attendanceDateInput = document.getElementById('attendanceDate');
-        const prevDayButton = document.getElementById('prev-day-button');
-        const nextDayButton = document.getElementById('next-day-button');
-        const showAttendanceFormButton = document.getElementById('show-attendance-form-button');
-        const attendanceMarkingDiv = document.getElementById('attendanceMarking');
-        const attendanceCheckboxesDiv = document.getElementById('attendanceCheckboxes');
-        const noScheduleMessage = document.getElementById('noScheduleMessage');
-        const saveAttendanceButton = document.getElementById('saveAttendanceButton');
-        const attendanceStatusDiv = document.getElementById('attendanceStatus');
-        const selectedDateDisplay = document.getElementById('selectedDateDisplay');
-        const selectedDayDisplay = document.getElementById('selectedDayDisplay');
-        const reportDisplay = document.getElementById('reportDisplay');
-        const generateReportButton = document.getElementById('generate-report-button');
-        const exportCsvButton = document.getElementById('export-csv-button');
-        const backupDataArea = document.getElementById('backupDataArea');
-        const restoreDataArea = document.getElementById('restoreDataArea');
-        const backupButton = document.getElementById('backup-button');
-        const restoreButton = document.getElementById('restore-button');
-        const resetButton = document.getElementById('reset-button');
-        const awardMonthSelect = document.getElementById('awardMonthSelect');
-        const calculateAwardButton = document.getElementById('calculateAwardButton');
-        const awardResultDisplay = document.getElementById('awardResultDisplay');
+    // --- UTILITIES ---
+    const $ = (selector) => document.querySelector(selector);
+    const $$ = (selector) => document.querySelectorAll(selector);
+    const loadingOverlay = $('#loadingOverlay');
+    function showLoading() { loadingOverlay.classList.add('show'); }
+    function hideLoading() { loadingOverlay.classList.remove('show'); }
+    function debounce(func, delay = 350) { clearTimeout(filterDebounceTimer); filterDebounceTimer = setTimeout(func, delay); }
+    function formatDate(dateString) { if (!dateString) return '-'; try { const date = new Date(dateString + 'T00:00:00'); if (isNaN(date.getTime())) return '-'; return date.toLocaleDateString('id-ID', { day: '2-digit', month: 'short', year: 'numeric' }); } catch (e) { return '-'; } }
+    function formatCurrency(value) { const number = Number(value); if (isNaN(number)) return 'Rp -'; return number.toLocaleString('id-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0, maximumFractionDigits: 0 }); }
+    function sanitizeUrl(url) { if (!url) return ''; url = url.trim(); if (!url) return ''; if (/^(https?|mailto|tel):/i.test(url)) return url; if (!/^[a-z]+:/i.test(url) && url.includes('.')) return 'http://' + url; return '#'; }
+    function parseTags(tagString) { if (!tagString || typeof tagString !== 'string') return []; return tagString.split(',').map(tag => tag.trim()).filter(tag => tag !== '' && tag.length < 30); }
+    function isValidUrl(string) { if (!string) return true; string = string.trim(); if (!string) return true; if (/^(https?|ftp|mailto|tel):/i.test(string)) { try { new URL(string); return true; } catch (_) { return false; } } if (!/^[a-z]+:/i.test(string) && string.includes('.') && string.length > 3) { try { new URL('http://' + string); return true; } catch (e) { return false; } } return false; }
 
-        // Modal References (Unchanged)
-        const viewMembersModal = document.getElementById('view-members-modal');
-        const modalOpenAddMemberButton = document.getElementById('modal-open-add-member-button');
-        const modalMemberSearchInput = document.getElementById('modal-member-search');
-        const modalMemberListDisplay = document.getElementById('modal-member-list-display');
-        const modalCloseViewMembersButton = document.getElementById('modal-close-view-members');
-        const addMemberModal = document.getElementById('add-member-modal');
-        const modalNewMemberNameInput = document.getElementById('modal-new-member-name');
-        const modalSaveMemberButton = document.getElementById('modal-save-member-button');
-        const modalCancelAddMemberButton = document.getElementById('modal-cancel-add-member');
-        const editScheduleModal = document.getElementById('edit-schedule-modal');
-        const modalScheduleTitle = document.getElementById('modal-schedule-title');
-        const modalScheduleSearchInput = document.getElementById('modal-schedule-search');
-        const modalScheduleMemberList = document.getElementById('modal-schedule-member-list');
-        const modalConfirmScheduleButton = document.getElementById('modal-confirm-schedule-button');
-        const modalCancelEditScheduleButton = document.getElementById('modal-cancel-edit-schedule');
-        const confirmationModal = document.getElementById('confirmation-modal');
-        const modalTitle = document.getElementById('modal-title');
-        const modalMessage = document.getElementById('modal-message');
-        const modalConfirmButton = document.getElementById('modal-confirm-button');
-        const modalCancelButton = document.getElementById('modal-cancel-button');
+    // --- THEME ---
+    const themeToggleBtn = $('#themeToggleBtn'); const currentTheme = localStorage.getItem('theme');
+    function applyTheme(theme) { if (theme === 'dark') { document.body.classList.add('dark-mode'); themeToggleBtn.textContent = '🌙'; themeToggleBtn.title = 'Switch to Light Mode'; localStorage.setItem('theme', 'dark'); } else { document.body.classList.remove('dark-mode'); themeToggleBtn.textContent = '☀️'; themeToggleBtn.title = 'Switch to Dark Mode'; localStorage.setItem('theme', 'light'); } if ($('#reportSection').classList.contains('active')) generateReport(); }
+    themeToggleBtn.addEventListener('click', () => { const newTheme = document.body.classList.contains('dark-mode') ? 'light' : 'dark'; applyTheme(newTheme); });
+    if (currentTheme) applyTheme(currentTheme); else if (window.matchMedia?.('(prefers-color-scheme: dark)')?.matches) applyTheme('dark'); else applyTheme('light');
 
-        // NEW: Swap Duty Modal References
-        const swapDutyModal = document.getElementById('swap-duty-modal');
-        const swapModalDate = document.getElementById('swap-modal-date');
-        const swapModalOriginalMember = document.getElementById('swap-modal-original-member');
-        const swapModalSubstituteSelect = document.getElementById('swap-modal-substitute-select');
-        const swapModalReason = document.getElementById('swap-modal-reason');
-        const modalConfirmSwapDutyButton = document.getElementById('modal-confirm-swap-duty');
-        const modalCancelSwapDutyButton = document.getElementById('modal-cancel-swap-duty');
+    // --- TOAST NOTIFICATIONS ---
+    const toastContainer = $('#toastContainer'); function showToast(message, type = 'info', duration = 3500) { const toast = document.createElement('div'); toast.className = `toast ${type}`; toast.innerHTML = `<span>${message}</span>`; toastContainer.appendChild(toast); toast.offsetHeight; toast.classList.add('show'); setTimeout(() => { if (toast.parentElement) { toast.classList.remove('show'); toast.addEventListener('transitionend', () => toast.remove(), { once: true }); } }, duration); }
 
-        /***********************************************************************
-         *     4) UTILITY FUNCTIONS (Unchanged)                               *
-         ***********************************************************************/
-        function showNotification(message, type = "info") { /* ... (unchanged) ... */ console.log(`[${type.toUpperCase()}] ${message}`); let bg; switch(type){ case "success": bg="linear-gradient(to right, #00b09b, #96c93d)"; break; case "error": bg="linear-gradient(to right, #ff5f6d, #ffc371)"; break; case "warning": bg="linear-gradient(to right, #f7b733, #fc4a1a)"; break; default: bg="linear-gradient(to right, #007bff, #0056b3)";} Toastify({text:message,duration:3000,close:true,gravity:"top",position:"right",stopOnFocus:true,style:{background:bg}}).showToast(); }
-        function showConfirmationModal(title, message, confirmCallback, confirmButtonClass = 'danger') { /* ... (unchanged) ... */ modalTitle.textContent = title; modalMessage.innerHTML = message; currentConfirmationCallback = confirmCallback; modalConfirmButton.className = 'modal-actions button '; modalConfirmButton.classList.add(confirmButtonClass); setLoading(modalConfirmButton, false); confirmationModal.classList.add('visible'); modalConfirmButton.focus(); }
-        function hideConfirmationModal() { /* ... (unchanged) ... */ confirmationModal.classList.remove('visible'); currentConfirmationCallback = null; }
-        function setLoading(buttonElement, isLoading) { /* ... (unchanged) ... */ if (!buttonElement) return; const textElement = buttonElement.querySelector('.button-text'); if (isLoading) { buttonElement.classList.add('loading'); buttonElement.disabled = true; if (textElement) textElement.style.opacity = '0'; } else { buttonElement.classList.remove('loading'); buttonElement.disabled = false; if (textElement) textElement.style.opacity = '1'; } }
-        function changeDate(days) { /* ... (unchanged) ... */ try { const currentDate = new Date(attendanceDateInput.value + "T00:00:00"); if (isNaN(currentDate.getTime())) { showNotification("Tanggal saat ini tidak valid.", "warning"); return; } currentDate.setDate(currentDate.getDate() + days); attendanceDateInput.value = currentDate.toISOString().split('T')[0]; showAttendanceForm(); } catch (e) { showNotification("Gagal mengubah tanggal.", "error"); } }
-        function openModal(modalElement) { /* ... (unchanged focus logic) ... */ modalElement.classList.add('visible'); let focusTarget = null; if (modalElement.id === 'add-member-modal') { focusTarget = modalNewMemberNameInput; } else if (modalElement.id === 'view-members-modal') { focusTarget = modalMemberSearchInput; } else if (modalElement.id === 'edit-schedule-modal') { focusTarget = modalScheduleSearchInput; } else if (modalElement.id === 'confirmation-modal') { focusTarget = modalConfirmButton; } else if (modalElement.id === 'swap-duty-modal') { focusTarget = swapModalSubstituteSelect; } if (focusTarget) { setTimeout(() => focusTarget.focus(), 150); } }
-        function closeModal(modalElement) { /* ... (unchanged) ... */ modalElement.classList.remove('visible'); }
-        function openAddMemberModal() { /* ... (unchanged) ... */ modalNewMemberNameInput.value = ''; setLoading(modalSaveMemberButton, false); openModal(addMemberModal); }
-        function openScheduleModal() { /* ... (unchanged) ... */ const selectedDay = scheduleDaySelect.value; modalScheduleTitle.innerHTML = `<i class="fa-solid fa-users-gear"></i> Pilih Anggota Piket - <strong>${selectedDay}</strong>`; modalScheduleSearchInput.value = ''; populateScheduleModal(selectedDay, ''); setLoading(modalConfirmScheduleButton, false); openModal(editScheduleModal); }
-        function openViewMembersModal() { /* ... (unchanged) ... */ modalMemberSearchInput.value = ''; displayMembers(''); openModal(viewMembersModal); }
+    // --- FORM VALIDATION ---
+    function validateField(field) { const errorElement = $(`#${field.id}Error`); let isValid = true; field.classList.remove('invalid'); if (errorElement) errorElement.style.display = 'none'; const label = field.labels?.[0]?.textContent || field.id; const value = field.value.trim(); if (field.required && !value && field.tagName !== 'SELECT') { if (errorElement) errorElement.textContent = `${label} wajib diisi.`; isValid = false; } else if (field.required && field.tagName === 'SELECT' && !field.value) { if (errorElement) errorElement.textContent = `${label} wajib dipilih.`; isValid = false; } else if (field.type === 'date' && field.id.includes('deadline')) { const formPrefix = field.id.startsWith('edit') ? 'edit' : ''; const orderDateField = $(`#${formPrefix}orderDate`); if (orderDateField?.value && field.value && field.value < orderDateField.value) { if (errorElement) errorElement.textContent = 'Deadline tdk boleh sblm Tgl Order.'; isValid = false; } } else if (field.type === 'number' && value !== '' && field.min && parseFloat(value) < parseFloat(field.min)) { if (errorElement) errorElement.textContent = `${label} min ${field.min}.`; isValid = false; } else if (field.type === 'url' && value && !isValidUrl(value)) { if (errorElement) errorElement.textContent = `Format ${label} tdk valid.`; isValid = false; } if (!isValid) { field.classList.add('invalid'); if (errorElement) errorElement.style.display = 'block'; field.setAttribute('aria-invalid', 'true'); } else { field.removeAttribute('aria-invalid'); } return isValid; }
+    function validateForm(formId) { let isFormValid = true; const form = $(`#${formId}`); const fields = form.querySelectorAll('[required], input[type="date"], input[type="number"], input[type="url"]'); fields.forEach(field => { if (field.required || field.value.trim() !== '') { if (!validateField(field)) isFormValid = false; } }); return isFormValid; }
+    $$('#orderForm [required], #orderForm input[type="date"], #orderForm input[type="number"], #orderForm input[type="url"]').forEach(field => { field.addEventListener('input', () => validateField(field)); field.addEventListener('change', () => validateField(field)); });
+    $$('#editForm [required], #editForm input[type="date"], #editForm input[type="number"], #editForm input[type="url"]').forEach(field => { field.addEventListener('input', () => validateField(field)); field.addEventListener('change', () => validateField(field)); });
 
-        /***********************************************************************
-         *     5) INITIALIZE MAIN APP (Unchanged)                             *
-         ***********************************************************************/
-        async function initializeAppMainApp() { /* ... (unchanged) ... */ console.log("Loading data from Firestore..."); showNotification("Memuat data awal...", "info"); try { await loadAllData(); displayMembers(); displaySchedule(); setDefaultAttendanceDate(); populateAwardMonthSelect(); addGlobalEventListeners(); console.log("Main app ready."); showNotification("Aplikasi siap digunakan.", "success"); } catch (err) { console.error("Error loading initial data:", err); showNotification("Gagal memuat data awal.", "error"); mainApp.innerHTML = `<div class="section" style="border-color: var(--danger-red);"><h2 style="color: var(--danger-red);"><i class="fa-solid fa-triangle-exclamation"></i> Gagal Memuat Data</h2><p>Tidak dapat terhubung atau memuat data. Coba muat ulang halaman.</p><p><small>${err.message}</small></p></div>`; } }
-        function loadAllData() { /* ... (unchanged) ... */ return Promise.all([ loadMembersFromFirestore(), loadScheduleFromFirestore(), loadAttendanceFromFirestore() ]); }
-        async function loadMembersFromFirestore() { /* ... (unchanged) ... */ members = []; const snap = await getDocs(collection(db, "members")); snap.forEach(docSnap => { const data = docSnap.data(); if (data.name) members.push(data.name); }); members.sort((a, b) => a.localeCompare(b)); }
-        async function loadScheduleFromFirestore() { /* ... (unchanged) ... */ schedule = {}; const snap = await getDocs(collection(db, "schedules")); snap.forEach(docSnap => { const data = docSnap.data(); if (data.day && Array.isArray(data.members)) { schedule[data.day] = data.members; } }); }
-        async function loadAttendanceFromFirestore() { /* ... (unchanged) ... */ attendance = {}; const snap = await getDocs(collection(db, "attendance")); snap.forEach(docSnap => { const data = docSnap.data(); if (data.date && data.records) { attendance[data.date] = migrateAttendanceObject(data.records); } }); }
-        function migrateAttendanceObject(records) { /* ... (unchanged, but now handles swap fields gracefully) ... */ const result = {}; for (const memberName in records) { const val = records[memberName]; if (typeof val === "boolean") { result[memberName] = { present: val, reason: "", swappedOut: false, substitute: null, isSubstitute: false, replaced: null }; } else if (val && typeof val.present === "boolean") { result[memberName] = { present: val.present, reason: val.reason || "", swappedOut: val.swappedOut || false, substitute: val.substitute || null, isSubstitute: val.isSubstitute || false, replaced: val.replaced || null }; } else { console.warn(`Invalid attendance format for ${memberName}:`, val); result[memberName] = { present: false, reason: "", swappedOut: false, substitute: null, isSubstitute: false, replaced: null }; } } return result; }
-        function setDefaultAttendanceDate() { /* ... (unchanged) ... */ try { attendanceDateInput.valueAsDate = new Date(); } catch (e) { const today = new Date(); const yyyy = today.getFullYear(); const mm = String(today.getMonth() + 1).padStart(2, "0"); const dd = String(today.getDate()).padStart(2, "0"); attendanceDateInput.value = `${yyyy}-${mm}-${dd}`; } }
-
-        function addGlobalEventListeners() {
-            // Member Management (Unchanged)
-            openViewMembersModalButton.addEventListener('click', openViewMembersModal);
-            viewMembersModal.addEventListener('click', (e) => { if (e.target === viewMembersModal) closeModal(viewMembersModal); });
-            modalCloseViewMembersButton.addEventListener('click', () => closeModal(viewMembersModal));
-            modalMemberSearchInput.addEventListener('input', () => displayMembers(modalMemberSearchInput.value));
-            modalOpenAddMemberButton.addEventListener('click', openAddMemberModal);
-            modalSaveMemberButton.addEventListener('click', addMember);
-            modalCancelAddMemberButton.addEventListener('click', () => closeModal(addMemberModal));
-            addMemberModal.addEventListener('click', (e) => { if (e.target === addMemberModal) closeModal(addMemberModal); });
-
-            // Schedule Management (Unchanged)
-            openEditScheduleModalButton.addEventListener('click', openScheduleModal);
-            scheduleDaySelect.addEventListener('change', displaySchedule);
-            modalScheduleSearchInput.addEventListener('input', () => { const selectedDay = scheduleDaySelect.value; populateScheduleModal(selectedDay, modalScheduleSearchInput.value); });
-            modalConfirmScheduleButton.addEventListener('click', saveScheduleForDay);
-            modalCancelEditScheduleButton.addEventListener('click', () => closeModal(editScheduleModal));
-            editScheduleModal.addEventListener('click', (e) => { if (e.target === editScheduleModal) closeModal(editScheduleModal); });
-            clearScheduleButton.addEventListener('click', () => { const day = scheduleDaySelect.value; showConfirmationModal('Konfirmasi Kosongkan Jadwal', `Yakin kosongkan jadwal <strong>${day}</strong>?`, () => clearScheduleForDayAction(day), 'warning'); });
-
-            // Attendance Management (Added Swap Button Listener)
-            showAttendanceFormButton.addEventListener('click', showAttendanceForm);
-            prevDayButton.addEventListener('click', () => changeDate(-1));
-            nextDayButton.addEventListener('click', () => changeDate(1));
-            attendanceCheckboxesDiv.addEventListener('change', handleAttendanceCheckboxChange);
-            // Use event delegation for swap buttons inside attendanceCheckboxesDiv
-            attendanceCheckboxesDiv.addEventListener('click', (event) => {
-                if (event.target.closest('.swap-button')) {
-                    const button = event.target.closest('.swap-button');
-                    const memberName = button.dataset.member;
-                    const date = button.dataset.date;
-                    if (memberName && date) {
-                        openSwapDutyModal(date, memberName);
-                    }
-                }
-            });
-            if (saveAttendanceButton) saveAttendanceButton.addEventListener('click', saveAttendance);
-
-            // Swap Duty Modal Buttons
-            modalConfirmSwapDutyButton.addEventListener('click', saveSwapDuty);
-            modalCancelSwapDutyButton.addEventListener('click', () => closeModal(swapDutyModal));
-            swapDutyModal.addEventListener('click', (e) => { if (e.target === swapDutyModal) closeModal(swapDutyModal); });
-
-            // Award Calculation (Unchanged)
-            calculateAwardButton.addEventListener('click', calculateMonthlyAward);
-
-            // Reporting (Unchanged)
-            generateReportButton.addEventListener('click', generateReport);
-            exportCsvButton.addEventListener('click', exportReportToCSV);
-
-            // Data Management (Unchanged)
-            backupButton.addEventListener('click', backupData);
-            restoreButton.addEventListener('click', () => { showConfirmationModal('Konfirmasi Restore Data', `<strong>PERHATIAN!</strong> Ini akan <strong>MENIMPA</strong> semua data di Firestore.<br>Pastikan data valid. Lanjutkan?`, restoreData, 'warning'); });
-            resetButton.addEventListener('click', () => { showConfirmationModal('Konfirmasi Reset Aplikasi', `<strong>PERINGATAN KERAS!</strong> Anda akan <strong>MENGHAPUS SEMUA</strong> data di Firestore.<br>Tidak dapat dibatalkan. Yakin?`, () => resetAllData(false), 'danger'); });
-
-            // Generic Confirmation Modal (Unchanged)
-            modalCancelButton.addEventListener('click', hideConfirmationModal);
-            modalConfirmButton.addEventListener('click', () => { if (currentConfirmationCallback) { setLoading(modalConfirmButton, true); Promise.resolve(currentConfirmationCallback()).finally(() => { setLoading(modalConfirmButton, false); hideConfirmationModal(); }); } else { hideConfirmationModal(); } });
-            confirmationModal.addEventListener('click', (e) => { if (e.target === confirmationModal) { hideConfirmationModal(); } });
-        }
-
-        /***********************************************************************
-         *     6) MANAGEMENT ANGGOTA (Unchanged)                              *
-         ***********************************************************************/
-        async function addMember() { /* ... (unchanged) ... */ const name = modalNewMemberNameInput.value.trim(); if (!name) { showNotification("Nama kosong", "warning"); return; } if (members.some(m => m.toLowerCase() === name.toLowerCase())) { showNotification(`"${name}" sudah ada`, "warning"); return; } setLoading(modalSaveMemberButton, true); try { await addDoc(collection(db, "members"), { name }); showNotification(`"${name}" ditambahkan.`, "success"); closeModal(addMemberModal); await loadMembersFromFirestore(); displayMembers(modalMemberSearchInput.value); } catch (err) { console.error("Error adding member:", err); showNotification("Gagal tambah anggota", "error"); } finally { setLoading(modalSaveMemberButton, false); } }
-        function displayMembers(filter = '') { /* ... (unchanged) ... */ modalMemberListDisplay.innerHTML = ""; const lowerCaseFilter = filter.toLowerCase(); const filteredMembers = members.filter(member => member.toLowerCase().includes(lowerCaseFilter)); if (filteredMembers.length === 0) { modalMemberListDisplay.innerHTML = filter ? `<li style="font-style: italic; background: transparent; border: none;">Tidak ada cocok "${filter}".</li>` : "<li style='font-style: italic; background: transparent; border: none;'>Belum ada anggota.</li>"; return; } filteredMembers.forEach(member => { const li = document.createElement("li"); li.dataset.memberName = member; const mainContent = document.createElement('div'); mainContent.style.display = 'flex'; mainContent.style.alignItems = 'center'; mainContent.style.flexGrow = '1'; const nameSpan = document.createElement("span"); nameSpan.textContent = member; nameSpan.classList.add("member-name"); nameSpan.style.marginRight = 'auto'; const viewControls = document.createElement("div"); viewControls.classList.add("view-controls"); const editBtn = document.createElement("button"); editBtn.innerHTML = `<i class="fa-solid fa-pencil"></i><span class="visually-hidden">Edit</span>`; editBtn.classList.add("info", "small-btn"); editBtn.setAttribute('aria-label', `Edit ${member}`); editBtn.onclick = (e) => { e.stopPropagation(); startEditMember(member, li); }; const removeBtn = document.createElement("button"); removeBtn.innerHTML = `<i class="fa-solid fa-trash-can"></i><span class="visually-hidden">Hapus</span>`; removeBtn.classList.add("danger", "small-btn"); removeBtn.setAttribute('aria-label', `Hapus ${member}`); removeBtn.onclick = (e) => { e.stopPropagation(); removeMember(member); }; viewControls.appendChild(editBtn); viewControls.appendChild(removeBtn); mainContent.appendChild(nameSpan); mainContent.appendChild(viewControls); const editControls = document.createElement("div"); editControls.classList.add("edit-controls"); const editInput = document.createElement("input"); editInput.type = "text"; editInput.value = member; editInput.classList.add("edit-member-input"); editInput.onclick = (e) => e.stopPropagation(); const saveBtn = document.createElement("button"); saveBtn.innerHTML = `<i class="fa-solid fa-save"></i> <span class="button-text">Simpan</span> <span class="spinner"></span>`; saveBtn.classList.add("success", "small-btn"); saveBtn.onclick = (e) => { e.stopPropagation(); saveEditMember(member, li); }; const cancelBtn = document.createElement("button"); cancelBtn.innerHTML = `<i class="fa-solid fa-times"></i> <span class="button-text">Batal</span>`; cancelBtn.classList.add("secondary", "small-btn"); cancelBtn.onclick = (e) => { e.stopPropagation(); cancelEditMember(li); }; editControls.appendChild(editInput); editControls.appendChild(saveBtn); editControls.appendChild(cancelBtn); li.appendChild(mainContent); li.appendChild(editControls); modalMemberListDisplay.appendChild(li); }); }
-        function startEditMember(memberName, listItemElement) { /* ... (unchanged) ... */ document.querySelectorAll('#modal-member-list-display li.editing').forEach(otherLi => { if (otherLi !== listItemElement) cancelEditMember(otherLi); }); listItemElement.classList.add('editing'); const input = listItemElement.querySelector(".edit-member-input"); input.focus(); input.select(); }
-        function cancelEditMember(listItemElement) { /* ... (unchanged) ... */ listItemElement.classList.remove('editing'); const originalName = listItemElement.dataset.memberName; listItemElement.querySelector(".edit-member-input").value = originalName; }
-        async function saveEditMember(originalName, listItemElement) { /* ... (unchanged) ... */ const editInput = listItemElement.querySelector(".edit-member-input"); const newName = editInput.value.trim(); const saveButton = listItemElement.querySelector(".edit-controls .success"); if (!newName) { showNotification("Nama kosong", "warning"); return; } if (newName.toLowerCase() !== originalName.toLowerCase() && members.some(m => m.toLowerCase() === newName.toLowerCase())) { showNotification(`"${newName}" sudah ada.`, "warning"); return; } if (newName === originalName) { cancelEditMember(listItemElement); return; } setLoading(saveButton, true); try { const memSnap = await getDocs(collection(db, "members")); let docIdToUpdate = null; memSnap.forEach(docSnap => { if (docSnap.data().name === originalName) { docIdToUpdate = docSnap.id; } }); if (!docIdToUpdate) throw new Error(`"${originalName}" tidak ditemukan.`); const memDocRef = doc(db, "members", docIdToUpdate); await updateDoc(memDocRef, { name: newName }); await renameMemberInRelatedCollections(originalName, newName); showNotification(`"${originalName}" diubah jadi "${newName}"`, "success"); await loadAllData(); displayMembers(modalMemberSearchInput.value); displaySchedule(); if (attendanceMarkingDiv.classList.contains('visible')) { showAttendanceForm(); } } catch (err) { console.error("Error saving member edit:", err); showNotification(`Gagal simpan: ${err.message}`, "error"); cancelEditMember(listItemElement); } finally { setLoading(saveButton, false); } }
-        async function renameMemberInRelatedCollections(oldName, newName) { /* ... (unchanged) ... */ const batcher = writeBatch(db); let hasChanges = false; const schedSnap = await getDocs(collection(db, "schedules")); schedSnap.forEach(docSnap => { const data = docSnap.data(); if (data.day && Array.isArray(data.members)) { let changed = false; const newArr = data.members.map(m => { if (m === oldName) { changed = true; return newName; } return m; }); if (changed) { batcher.update(doc(db, "schedules", docSnap.id), { members: newArr }); hasChanges = true; } } }); const attSnap = await getDocs(collection(db, "attendance")); attSnap.forEach(docSnap => { const data = docSnap.data(); if (data.records && typeof data.records === 'object' && data.records[oldName]) { const updatedRecords = { ...data.records }; updatedRecords[newName] = updatedRecords[oldName]; delete updatedRecords[oldName]; batcher.update(doc(db, "attendance", docSnap.id), { records: updatedRecords }); hasChanges = true; } }); if (hasChanges) { await batcher.commit(); console.log(`Ref "${oldName}" -> "${newName}".`); } }
-        function removeMember(nameToRemove) { /* ... (unchanged) ... */ showConfirmationModal('Konfirmasi Hapus Anggota', `Yakin hapus "<strong>${nameToRemove}</strong>"?<br>Jadwal & kehadiran terkait juga dihapus.`, () => removeMemberAction(nameToRemove)); }
-        async function removeMemberAction(nameToRemove) { /* ... (unchanged) ... */ showNotification(`Menghapus ${nameToRemove}...`, "info"); try { const memSnap = await getDocs(collection(db, "members")); let docIdToDelete = null; memSnap.forEach(docSnap => { if (docSnap.data().name === nameToRemove) { docIdToDelete = docSnap.id; } }); const batcher = writeBatch(db); if (docIdToDelete) { batcher.delete(doc(db, "members", docIdToDelete)); } const schedSnap = await getDocs(collection(db, "schedules")); schedSnap.forEach(docSnap => { const data = docSnap.data(); if (data.day && Array.isArray(data.members)) { const filtered = data.members.filter(m => m !== nameToRemove); if (filtered.length !== data.members.length) { batcher.update(doc(db, "schedules", docSnap.id), { members: filtered }); } } }); const attSnap = await getDocs(collection(db, "attendance")); attSnap.forEach(docSnap => { const data = docSnap.data(); if (data.records && typeof data.records === 'object' && data.records[nameToRemove]) { const updatedRecords = { ...data.records }; delete updatedRecords[nameToRemove]; batcher.update(doc(db, "attendance", docSnap.id), { records: updatedRecords }); } }); await batcher.commit(); showNotification(`"${nameToRemove}" dihapus.`, "success"); await loadAllData(); displayMembers(modalMemberSearchInput.value); displaySchedule(); populateAwardMonthSelect(); attendanceMarkingDiv.classList.remove('visible'); attendanceStatusDiv.innerHTML = ""; reportDisplay.innerHTML = ""; } catch (err) { console.error("Error removing member:", err); showNotification("Gagal hapus anggota", "error"); } }
-
-        /***********************************************************************
-         *     7) MANAGEMENT JADWAL (Unchanged)                              *
-         ***********************************************************************/
-        function populateScheduleModal(selectedDay, filter = '') { /* ... (unchanged) ... */ modalScheduleMemberList.innerHTML = ""; const lowerCaseFilter = filter.toLowerCase(); const membersScheduledThisDay = schedule[selectedDay] || []; if (members.length === 0) { modalScheduleMemberList.innerHTML = "<p>Tambah anggota.</p>"; return; } let visibleCount = 0; members.forEach(member => { const isVisible = filter === '' || member.toLowerCase().includes(lowerCaseFilter); if (!isVisible) return; visibleCount++; const labelEl = document.createElement("label"); const cb = document.createElement("input"); cb.type = "checkbox"; cb.value = member; const safeMemberId = member.replace(/[^a-zA-Z0-9-_]/g, ""); cb.id = `modal-schedule-cb-${safeMemberId}-${selectedDay}`; cb.checked = membersScheduledThisDay.includes(member); labelEl.appendChild(cb); labelEl.appendChild(document.createTextNode(" " + member)); labelEl.htmlFor = cb.id; modalScheduleMemberList.appendChild(labelEl); }); if (visibleCount === 0 && members.length > 0) { modalScheduleMemberList.innerHTML = `<p>Tidak cocok "${filter}".</p>`; } }
-        async function saveScheduleForDay() { /* ... (unchanged) ... */ const day = scheduleDaySelect.value; const checkboxes = modalScheduleMemberList.querySelectorAll("input[type='checkbox']:checked"); const selectedMembers = Array.from(checkboxes).map(cb => cb.value); setLoading(modalConfirmScheduleButton, true); try { await setDoc(doc(db, "schedules", day), { day, members: selectedMembers }); schedule[day] = selectedMembers; displaySchedule(); closeModal(editScheduleModal); showNotification(`Jadwal ${day} disimpan.`, "success"); } catch (err) { console.error("Error saving schedule:", err); showNotification("Gagal simpan jadwal", "error"); } finally { setLoading(modalConfirmScheduleButton, false); } }
-        async function clearScheduleForDayAction(day) { /* ... (unchanged) ... */ setLoading(clearScheduleButton, true); try { await setDoc(doc(db, "schedules", day), { day, members: [] }); schedule[day] = []; displaySchedule(); showNotification(`Jadwal ${day} dikosongkan.`, "success"); } catch (err) { console.error("Error clearing schedule:", err); showNotification("Gagal kosongkan jadwal", "error"); } finally { setLoading(clearScheduleButton, false); } }
-        function displaySchedule() { /* ... (unchanged) ... */ scheduleDisplay.innerHTML = ""; const daysOrder = ["Senin", "Selasa", "Rabu", "Kamis", "Jumat", "Sabtu", "Minggu"]; let hasSchedule = false; daysOrder.forEach(day => { if (schedule[day] && schedule[day].length > 0) { hasSchedule = true; const div = document.createElement("div"); const names = schedule[day].join(", ") || "<i>(Kosong)</i>"; div.innerHTML = `<strong>${day}:</strong> ${names}`; scheduleDisplay.appendChild(div); } }); if (!hasSchedule) { scheduleDisplay.innerHTML = "<div>Belum ada jadwal.</div>"; } }
-
-        /***********************************************************************
-         *     8) ABSENSI / KEHADIRAN (Modified for Swap Button & Display)    *
-         ***********************************************************************/
-        function showAttendanceForm() {
-            const selectedDate = attendanceDateInput.value;
-            if (!selectedDate || !/^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) { showNotification("Pilih tanggal valid.", "warning"); attendanceMarkingDiv.classList.remove('visible'); return; }
-            const dateObj = new Date(selectedDate + "T00:00:00"); if (isNaN(dateObj.getTime())) { showNotification("Tanggal tidak valid.", "error"); attendanceMarkingDiv.classList.remove('visible'); return; }
-            const dayIndex = dateObj.getDay(); const dayName = daysInIndonesian[dayIndex];
-            selectedDateDisplay.textContent = selectedDate; selectedDayDisplay.textContent = dayName;
-            attendanceCheckboxesDiv.innerHTML = ""; attendanceStatusDiv.innerHTML = ""; saveAttendanceButton.style.display = "none"; noScheduleMessage.style.display = "none";
-
-            const scheduled = schedule[dayName] || [];
-            const validScheduledMembers = scheduled.filter(m => members.includes(m));
-            const existingAttendance = attendance[selectedDate] || {};
-
-            if (validScheduledMembers.length === 0) {
-                noScheduleMessage.style.display = "block";
-                attendanceCheckboxesDiv.innerHTML = "<p>Tidak ada anggota dijadwalkan piket hari ini.</p>";
-            } else {
-                saveAttendanceButton.style.display = "inline-flex"; // Show save button
-
-                validScheduledMembers.forEach(member => {
-                    const record = existingAttendance[member] || { present: false, reason: "", swappedOut: false, substitute: null, isSubstitute: false, replaced: null };
-                    const isPresent = record.present;
-                    const isSwappedOut = record.swappedOut;
-                    const currentReason = record.reason || "";
-                    const safeMemberId = member.replace(/[^a-zA-Z0-9-_]/g, "");
-
-                    const itemDiv = document.createElement("div");
-                    itemDiv.classList.add("attendance-item");
-                    // Show reason input if absent AND not swapped out
-                    itemDiv.classList.toggle('show-reason', !isPresent && !isSwappedOut);
-
-                    const labelEl = document.createElement("label");
-                    const checkbox = document.createElement("input");
-                    checkbox.type = "checkbox";
-                    checkbox.value = member;
-                    checkbox.checked = isPresent;
-                    checkbox.classList.add("attendance-checkbox");
-                    checkbox.id = `att-${selectedDate}-${safeMemberId}`;
-                    // Disable checkbox if this member was swapped out or is a substitute (handled by swap logic)
-                    checkbox.disabled = isSwappedOut || record.isSubstitute;
-
-                    labelEl.htmlFor = checkbox.id;
-                    labelEl.appendChild(checkbox);
-                    labelEl.appendChild(document.createTextNode(" " + member));
-
-                    // Add visual cues for swapped status
-                    if (isSwappedOut) {
-                        const swapOutInfo = document.createElement('span');
-                        swapOutInfo.classList.add('swap-info');
-                        swapOutInfo.textContent = ` (Digantikan oleh ${record.substitute || '???'})`;
-                        labelEl.appendChild(swapOutInfo);
-                        labelEl.style.textDecoration = 'line-through'; // Cross out name
-                        labelEl.style.color = 'var(--disabled-text)';
-                    } else if (record.isSubstitute) {
-                         const swapInInfo = document.createElement('span');
-                         swapInInfo.classList.add('swap-info');
-                         swapInInfo.textContent = ` (Menggantikan ${record.replaced || '???'})`;
-                         labelEl.appendChild(swapInInfo);
-                         labelEl.style.color = 'var(--swap-color)';
-                    }
-
-                    const reasonInput = document.createElement("input");
-                    reasonInput.type = "text";
-                    reasonInput.value = currentReason;
-                    reasonInput.placeholder = "Alasan...";
-                    reasonInput.classList.add("reason-input");
-                    reasonInput.disabled = isPresent || isSwappedOut; // Disable if present or swapped out
-
-                    // Swap Button
-                    const swapButton = document.createElement("button");
-                    swapButton.innerHTML = `<i class="fa-solid fa-right-left"></i><span class="visually-hidden">Tukar</span>`;
-                    swapButton.classList.add("swap", "small-btn", "swap-button");
-                    swapButton.dataset.member = member; // Store member name
-                    swapButton.dataset.date = selectedDate; // Store date
-                    swapButton.setAttribute('aria-label', `Tukar tugas ${member}`);
-                    // Disable swap button if the member IS a substitute
-                    swapButton.disabled = record.isSubstitute;
-
-                    itemDiv.appendChild(labelEl);
-                    itemDiv.appendChild(reasonInput);
-                    itemDiv.appendChild(swapButton); // Add swap button
-                    attendanceCheckboxesDiv.appendChild(itemDiv);
-                });
-                displayAttendanceStatus(selectedDate, dayName); // Display initial status
-            }
-            attendanceMarkingDiv.classList.add('visible');
-        }
-
-        function handleAttendanceCheckboxChange(event) {
-            if (event.target.type === "checkbox" && event.target.classList.contains("attendance-checkbox")) {
-                const itemDiv = event.target.closest(".attendance-item");
-                if (itemDiv) {
-                    const isChecked = event.target.checked;
-                    const reasonInput = itemDiv.querySelector(".reason-input");
-                    // Show reason input only if unchecked AND not swapped out
-                    const isSwappedOut = itemDiv.querySelector('.swap-info')?.textContent.includes('Digantikan');
-                    itemDiv.classList.toggle('show-reason', !isChecked && !isSwappedOut);
-                    if (reasonInput) {
-                         reasonInput.disabled = isChecked || isSwappedOut;
-                         if (isChecked) reasonInput.value = ""; // Clear reason if checked present
-                    }
-                }
-            }
-        }
-
-        // Modified saveAttendance to handle swap data potentially being present
-        async function saveAttendance() {
-            const selectedDate = attendanceDateInput.value;
-            if (!selectedDate || !/^\d{4}-\d{2}-\d{2}$/.test(selectedDate)) { showNotification("Tanggal tidak valid.", "error"); return; }
-            const dateObj = new Date(selectedDate + "T00:00:00"); if (isNaN(dateObj.getTime())) { showNotification("Tanggal tidak valid.", "error"); return; }
-            const dayName = daysInIndonesian[dateObj.getDay()];
-            const scheduled = schedule[dayName] || [];
-
-            // Get existing records for the day, or initialize if none
-            const existingRecords = attendance[selectedDate] ? JSON.parse(JSON.stringify(attendance[selectedDate])) : {};
-            const newRecords = {};
-
-            const items = attendanceCheckboxesDiv.querySelectorAll(".attendance-item");
-
-            items.forEach(item => {
-                const checkbox = item.querySelector(".attendance-checkbox");
-                const reasonInput = item.querySelector(".reason-input");
-                const memberName = checkbox.value;
-
-                // Only process members who were originally scheduled for this day
-                if (scheduled.includes(memberName)) {
-                    const isPresent = checkbox.checked;
-                    const reason = isPresent ? "" : reasonInput.value.trim();
-
-                    // Preserve swap data if it exists, otherwise use checkbox state
-                    const existingMemberRecord = existingRecords[memberName] || {};
-                    if (existingMemberRecord.swappedOut) {
-                        // If swapped out, keep that status regardless of checkbox
-                        newRecords[memberName] = {
-                            present: false,
-                            reason: existingMemberRecord.reason || reason, // Keep existing reason or use new one if empty
-                            swappedOut: true,
-                            substitute: existingMemberRecord.substitute,
-                            isSubstitute: false,
-                            replaced: null
-                        };
-                    } else if (existingMemberRecord.isSubstitute) {
-                         // This case shouldn't happen via checkbox change, but as safety
-                         newRecords[memberName] = { ...existingMemberRecord };
-                    }
-                    else {
-                        // Normal attendance marking
-                        newRecords[memberName] = {
-                            present: isPresent,
-                            reason: reason,
-                            swappedOut: false,
-                            substitute: null,
-                            isSubstitute: false,
-                            replaced: null
-                        };
-                    }
-                }
-            });
-
-             // Also include any substitute records that might exist for this date
-             Object.keys(existingRecords).forEach(memberName => {
-                 if (existingRecords[memberName].isSubstitute && !newRecords[memberName]) {
-                     newRecords[memberName] = { ...existingRecords[memberName] };
-                 }
-             });
-
-
-            setLoading(saveAttendanceButton, true);
+    // --- DATA MANAGEMENT (FIRESTORE) ---
+    async function loadData() { if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } showLoading(); orders = []; try { const querySnapshot = await ordersCollection.orderBy("orderDate", "desc").orderBy("clientName", "asc").get(); querySnapshot.forEach((doc) => { const data = doc.data(); orders.push({ ...data, firestoreId: doc.id }); }); console.log(`Loaded ${orders.length} orders from Firestore.`); itemsPerPage = parseInt(localStorage.getItem('itemsPerPage') || '15', 10); $('#itemsPerPageSelect').value = itemsPerPage; populateReportProjectTypeFilter(); applyFilterAndSort(); updateDashboard(); } catch (error) { console.error("Error loading orders: ", error); showToast("Gagal memuat data pesanan.", "error"); } finally { hideLoading(); } }
+    $('#orderForm').addEventListener('submit', async function(e) { e.preventDefault(); if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } if (!validateForm('orderForm')) { showToast("Harap perbaiki error form.", "error"); this.querySelector('.invalid')?.focus(); return; } const newOrderData = { clientName: $('#clientName').value.trim(), clientContact: $('#clientContact').value.trim(), projectType: $('#projectType').value, projectPrice: parseFloat($('#projectPrice').value) || 0, orderDate: $('#orderDate').value, deadline: $('#deadline').value, priority: $('#priority').value, attachmentLink: $('#attachmentLink').value.trim(), projectTags: parseTags($('#projectTags').value), notes: $('#notes').value.trim(), status: "Pending", isArchived: false, }; showLoading(); try { const docRef = await ordersCollection.add(newOrderData); console.log("Document written with ID: ", docRef.id); orders.unshift({ ...newOrderData, firestoreId: docRef.id }); this.reset(); $$('#orderForm .error-message').forEach(el => el.style.display = 'none'); $$('#orderForm .invalid').forEach(el => el.classList.remove('invalid')); showToast("Pesanan berhasil ditambahkan!", "success"); currentPage = 1; populateReportProjectTypeFilter(); showSection('listSection'); } catch (error) { console.error("Error adding document: ", error); showToast("Gagal menambahkan pesanan.", "error"); } finally { hideLoading(); } });
+    async function updateStatus(firestoreId, newStatus) { if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } showLoading(); try { const docRef = ordersCollection.doc(firestoreId); await docRef.update({ status: newStatus }); const index = orders.findIndex(o => o.firestoreId === firestoreId); if (index !== -1) orders[index].status = newStatus; applyFilterAndSort(); showToast("Status diperbarui.", "info"); } catch (error) { console.error("Error updating status: ", error); showToast("Gagal memperbarui status.", "error"); } finally { hideLoading(); } }
+    async function updatePriority(firestoreId, newPriority) { if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } showLoading(); try { const docRef = ordersCollection.doc(firestoreId); await docRef.update({ priority: newPriority }); const index = orders.findIndex(o => o.firestoreId === firestoreId); if (index !== -1) orders[index].priority = newPriority; applyFilterAndSort(); showToast("Prioritas diperbarui.", "info"); } catch (error) { console.error("Error updating priority: ", error); showToast("Gagal memperbarui prioritas.", "error"); } finally { hideLoading(); } }
+    async function archiveOrder(firestoreId) { if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } const order = orders.find(o => o.firestoreId === firestoreId); if (!order) return; if (confirm(`Arsipkan pesanan "${order.clientName}"?`)) { showLoading(); try { const docRef = ordersCollection.doc(firestoreId); await docRef.update({ isArchived: true }); order.isArchived = true; applyFilterAndSort(); showToast(`Pesanan "${order.clientName}" diarsipkan.`, "info"); } catch (error) { console.error("Error archiving order: ", error); showToast("Gagal mengarsipkan pesanan.", "error"); } finally { hideLoading(); } } }
+    async function unarchiveOrder(firestoreId) { if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } showLoading(); try { const docRef = ordersCollection.doc(firestoreId); await docRef.update({ isArchived: false }); const order = orders.find(o => o.firestoreId === firestoreId); if (order) order.isArchived = false; applyFilterAndSort(); showToast(`Pesanan dipulihkan.`, "info"); } catch (error) { console.error("Error unarchiving order: ", error); showToast("Gagal memulihkan pesanan.", "error"); } finally { hideLoading(); } }
+    async function deleteOrderPermanently(firestoreId) { // Handles both active and archived
+        if (!db) { showToast("Koneksi Database Gagal!", "error"); return; }
+        const orderIndex = orders.findIndex(o => o.firestoreId === firestoreId);
+        if (orderIndex === -1) return;
+        const orderToDelete = orders[orderIndex];
+        const confirmationMsg = `HAPUS PERMANEN pesanan "${orderToDelete.clientName}"? (${orderToDelete.isArchived ? 'Arsip' : 'Aktif'}) Tindakan ini tidak bisa dibatalkan.`;
+        if (confirm(confirmationMsg)) {
+            showLoading();
             try {
-                const docRef = doc(db, "attendance", selectedDate);
-                if (Object.keys(newRecords).length === 0) {
-                    try { await deleteDoc(docRef); delete attendance[selectedDate]; showNotification(`Absensi ${selectedDate} dihapus (kosong).`, "info"); } catch (delErr) { if (delErr.code !== 'not-found') throw delErr; else console.log("Attendance doc to delete not found."); delete attendance[selectedDate]; }
-                } else {
-                    await setDoc(docRef, { date: selectedDate, records: newRecords });
-                    attendance[selectedDate] = newRecords; // Update local cache
-                    showNotification(`Kehadiran ${selectedDate} disimpan.`, "success");
-                }
-                // Refresh display to show saved state including swap info
-                displayAttendanceStatus(selectedDate, dayName);
-                populateAwardMonthSelect(); // Refresh months
-            } catch (err) {
-                console.error("Error saving attendance:", err);
-                showNotification("Gagal menyimpan kehadiran", "error");
-            } finally {
-                setLoading(saveAttendanceButton, false);
-            }
-        }
-
-        // Modified displayAttendanceStatus to show swap info
-        function displayAttendanceStatus(selectedDate, dayName) {
-            attendanceStatusDiv.innerHTML = "";
-            const scheduled = schedule[dayName] || [];
-            const attData = attendance[selectedDate] || {};
-            const membersToShow = new Set([...scheduled, ...Object.keys(attData)]); // Show scheduled + anyone in attendance record (substitutes)
-
-            const validMembersToShow = Array.from(membersToShow).filter(m => members.includes(m)); // Filter only active members
-
-            if (validMembersToShow.length === 0) {
-                attendanceStatusDiv.innerHTML = "<p>Tidak ada data kehadiran/jadwal valid.</p>";
-                return;
-            }
-
-            attendanceStatusDiv.innerHTML = `<strong>Status ${selectedDate} (${dayName}):</strong>`;
-            const presentUl = document.createElement("ul");
-            const absentUl = document.createElement("ul");
-            let presentCount = 0;
-            let absentCount = 0;
-
-            validMembersToShow.forEach(member => {
-                const li = document.createElement("li");
-                const record = attData[member] || { present: false, reason: "", swappedOut: false, isSubstitute: false }; // Default if not in record
-                li.textContent = member;
-
-                if (record.present) {
-                    li.classList.add("present");
-                    if (record.isSubstitute) {
-                        li.classList.add("substitute"); // Add substitute class
-                        li.textContent += ` (Piket - Menggantikan ${record.replaced || '???'})`;
-                    } else {
-                        li.textContent += " (Piket)";
-                    }
-                    presentUl.appendChild(li);
-                    presentCount++;
-                } else {
-                    li.classList.add("absent");
-                    if (record.swappedOut) {
-                        li.classList.add("swapped-out"); // Add swapped-out class
-                        li.textContent += ` (Digantikan oleh ${record.substitute || '???'})`;
-                    } else {
-                        li.textContent += " (Tidak Piket)";
-                    }
-                    // Show reason only if truly absent (not swapped out)
-                    if (record.reason && !record.swappedOut) {
-                        const reasonSpan = document.createElement("span");
-                        reasonSpan.classList.add("reason-text");
-                        reasonSpan.textContent = `- ${record.reason}`;
-                        li.appendChild(reasonSpan);
-                    }
-                    absentUl.appendChild(li);
-                    absentCount++;
-                }
-            });
-
-            const summary = document.createElement("p");
-            summary.innerHTML = `Total Hadir Piket: <span class="present">${presentCount}</span>, Tidak Hadir/Digantikan: <span class="absent">${absentCount}</span>`;
-            attendanceStatusDiv.appendChild(summary);
-
-            if (presentUl.hasChildNodes()) {
-                const presentHeader = document.createElement("strong");
-                presentHeader.textContent = "Daftar Hadir (Piket):";
-                presentHeader.style.color = "var(--success-green)";
-                attendanceStatusDiv.appendChild(presentHeader);
-                attendanceStatusDiv.appendChild(presentUl);
-            }
-            if (absentUl.hasChildNodes()) {
-                const absentHeader = document.createElement("strong");
-                absentHeader.textContent = "Daftar Tidak Hadir/Digantikan:";
-                absentHeader.style.color = "var(--danger-red)";
-                absentHeader.style.display = "block";
-                absentHeader.style.marginTop = "10px";
-                attendanceStatusDiv.appendChild(absentHeader);
-                attendanceStatusDiv.appendChild(absentUl);
-            }
-        }
-
-        /***********************************************************************
-         *     9) TUKAR TUGAS (NEW FUNCTIONS)                                 *
-         ***********************************************************************/
-        function openSwapDutyModal(date, originalMemberName) {
-            // Populate modal fields
-            swapModalDate.textContent = date;
-            swapModalOriginalMember.textContent = originalMemberName;
-
-            // Populate substitute dropdown
-            swapModalSubstituteSelect.innerHTML = '<option value="">-- Pilih Pengganti --</option>'; // Reset
-            members.forEach(member => {
-                if (member !== originalMemberName) { // Exclude the original member
-                    const option = document.createElement('option');
-                    option.value = member;
-                    option.textContent = member;
-                    swapModalSubstituteSelect.appendChild(option);
-                }
-            });
-
-            swapModalReason.value = ''; // Clear reason input
-            setLoading(modalConfirmSwapDutyButton, false); // Reset button state
-
-            // Store data needed for saving
-            swapDutyModal.dataset.originalMember = originalMemberName;
-            swapDutyModal.dataset.date = date;
-
-            openModal(swapDutyModal);
-        }
-
-        async function saveSwapDuty() {
-            const originalMember = swapDutyModal.dataset.originalMember;
-            const date = swapDutyModal.dataset.date;
-            const substituteMember = swapModalSubstituteSelect.value;
-            const reason = swapModalReason.value.trim();
-
-            if (!substituteMember) {
-                showNotification("Silakan pilih anggota pengganti.", "warning");
-                return;
-            }
-            if (!originalMember || !date) {
-                 showNotification("Data anggota asli atau tanggal tidak ditemukan.", "error");
-                 return;
-            }
-
-            setLoading(modalConfirmSwapDutyButton, true);
-
-            try {
-                // Get current attendance data for the date, or initialize
-                const currentDayAttendance = attendance[date] ? JSON.parse(JSON.stringify(attendance[date])) : {};
-
-                // --- Update records ---
-                // 1. Mark original member as swapped out
-                currentDayAttendance[originalMember] = {
-                    present: false,
-                    reason: reason, // Use the reason entered in the swap modal
-                    swappedOut: true,
-                    substitute: substituteMember,
-                    isSubstitute: false, // Original is never a substitute
-                    replaced: null
-                };
-
-                // 2. Mark substitute member as present (substitute)
-                // Check if substitute already has a record (e.g., was marked absent before swap)
-                const existingSubstituteRecord = currentDayAttendance[substituteMember] || {};
-                currentDayAttendance[substituteMember] = {
-                    ...existingSubstituteRecord, // Keep potential existing reason if they were absent? Or clear it? Let's clear it.
-                    present: true,
-                    reason: "", // Clear reason for substitute
-                    swappedOut: false, // Substitute is not swapped out
-                    substitute: null,
-                    isSubstitute: true, // Mark as substitute
-                    replaced: originalMember // Record who they replaced
-                };
-
-                // --- Save to Firestore ---
-                const docRef = doc(db, "attendance", date);
-                await setDoc(docRef, { date: date, records: currentDayAttendance });
-
-                // Update local cache
-                attendance[date] = currentDayAttendance;
-
-                showNotification(`Pertukaran tugas ${originalMember} -> ${substituteMember} pada ${date} berhasil disimpan.`, "success");
-                closeModal(swapDutyModal);
-
-                // Refresh the attendance form display for the current date
-                showAttendanceForm(); // This will re-render checkboxes and status
-
-            } catch (err) {
-                console.error("Error saving swap duty:", err);
-                showNotification("Gagal menyimpan pertukaran tugas.", "error");
-            } finally {
-                setLoading(modalConfirmSwapDutyButton, false);
-            }
-        }
-
-
-        /***********************************************************************
-         *     10) PENGHARGAAN BULANAN (Modified Calculation)                 *
-         ***********************************************************************/
-         function populateAwardMonthSelect() { /* ... (unchanged) ... */ const months = new Set(); Object.keys(attendance).forEach(date => { if (/^\d{4}-\d{2}-\d{2}$/.test(date)) { months.add(date.substring(0, 7)); } }); const sortedMonths = Array.from(months).sort().reverse(); awardMonthSelect.innerHTML = '<option value="">-- Pilih Bulan --</option>'; sortedMonths.forEach(monthYYYYMM => { const [year, month] = monthYYYYMM.split('-'); const monthName = monthNamesIndonesian[parseInt(month, 10) - 1]; const option = document.createElement('option'); option.value = monthYYYYMM; option.textContent = `${monthName} ${year}`; awardMonthSelect.appendChild(option); }); if (sortedMonths.length === 0) { awardMonthSelect.disabled = true; calculateAwardButton.disabled = true; awardResultDisplay.innerHTML = '<p><i>Belum ada data kehadiran.</i></p>'; } else { awardMonthSelect.disabled = false; calculateAwardButton.disabled = false; awardResultDisplay.innerHTML = '<p><i>Pilih bulan dan klik tombol.</i></p>'; } }
-
-         function calculateMonthlyAward() {
-             const selectedMonth = awardMonthSelect.value;
-             if (!selectedMonth) { showNotification("Pilih bulan.", "warning"); awardResultDisplay.innerHTML = '<p style="color: orange;">Pilih bulan.</p>'; return; }
-
-             setLoading(calculateAwardButton, true);
-             awardResultDisplay.innerHTML = '<p><i>Menghitung...</i></p>';
-
-             const monthlyCounts = {}; // Count actual presence
-             let totalAttendanceInMonth = 0;
-
-             Object.keys(attendance).forEach(date => {
-                 if (date.startsWith(selectedMonth)) {
-                     const dailyRecords = attendance[date];
-                     if (dailyRecords) {
-                         Object.keys(dailyRecords).forEach(memberName => {
-                             // Only count active members who were PRESENT (including substitutes)
-                             if (members.includes(memberName) && dailyRecords[memberName].present === true) {
-                                 monthlyCounts[memberName] = (monthlyCounts[memberName] || 0) + 1;
-                                 totalAttendanceInMonth++;
-                             }
-                         });
-                     }
-                 }
-             });
-
-             let maxAttendance = 0;
-             let winners = [];
-
-             if (totalAttendanceInMonth === 0) {
-                  awardResultDisplay.innerHTML = `<p>Tidak ada kehadiran tercatat untuk ${awardMonthSelect.options[awardMonthSelect.selectedIndex].text}.</p>`;
-                  setLoading(calculateAwardButton, false);
-                  return;
-             }
-
-             Object.values(monthlyCounts).forEach(count => { if (count > maxAttendance) maxAttendance = count; });
-             Object.keys(monthlyCounts).forEach(memberName => { if (monthlyCounts[memberName] === maxAttendance) winners.push(memberName); });
-
-             const [year, month] = selectedMonth.split('-');
-             const monthName = monthNamesIndonesian[parseInt(month, 10) - 1];
-             if (winners.length > 0) {
-                 const winnerText = winners.join(', ');
-                 awardResultDisplay.innerHTML = `<p>Penghargaan Bulan <strong>${monthName} ${year}</strong>:</p><p class="winner"><i class="fa-solid fa-star"></i> ${winnerText}</p><p>Total kehadiran: <strong>${maxAttendance} kali</strong>.</p>`;
-                 showNotification(`Penghargaan ${monthName} ${year}: ${winnerText}.`, "success");
-             } else {
-                 awardResultDisplay.innerHTML = `<p>Tidak ditemukan data kehadiran untuk ${monthName} ${year}.</p>`;
-             }
-             setLoading(calculateAwardButton, false);
-         }
-
-
-        /***********************************************************************
-         *     11) LAPORAN PARTISIPASI (Modified Calculation)                 *
-         ***********************************************************************/
-        async function generateReport() {
-            setLoading(generateReportButton, true);
-            reportDisplay.innerHTML = "<p>Memproses laporan...</p>";
-            await new Promise(resolve => setTimeout(resolve, 50));
-
-            try {
-                if (members.length === 0) { reportDisplay.innerHTML = "<p>Tidak ada anggota.</p>"; return; }
-                const hasAttendance = Object.keys(attendance).length > 0;
-                if (!hasAttendance) { reportDisplay.innerHTML = "<p>Belum ada data kehadiran.</p>"; return; }
-
-                const memberStats = {};
-                members.forEach(m => (memberStats[m] = { scheduled: 0, attended: 0, substituted: 0 })); // Add substituted count
-                let totalPiketOpportunitiesRecorded = 0;
-
-                for (const date in attendance) {
-                    const dateObj = new Date(date + "T00:00:00");
-                    if (isNaN(dateObj.getTime())) continue;
-                    const dayName = daysInIndonesian[dateObj.getDay()];
-                    const scheduledMembersOnDate = schedule[dayName] || [];
-                    const dailyRecord = attendance[date];
-
-                    // First pass: Count scheduled opportunities for active members
-                    scheduledMembersOnDate.forEach(member => {
-                         // Only count if member is active AND there's an attendance record for this date (meaning it was checked)
-                         if (memberStats[member] && dailyRecord) {
-                              memberStats[member].scheduled++;
-                              totalPiketOpportunitiesRecorded++;
-                         }
-                    });
-
-                    // Second pass: Count attendance based on who actually performed
-                    Object.keys(dailyRecord).forEach(memberName => {
-                         if (memberStats[memberName]) { // Only process active members found in the record
-                              const record = dailyRecord[memberName];
-                              if (record.present === true) {
-                                   memberStats[memberName].attended++; // Count if present (includes substitutes)
-                                   if (record.isSubstitute) {
-                                        memberStats[memberName].substituted++; // Specifically count substitute appearances
-                                   }
-                              }
-                         }
-                    });
-                }
-
-
-                if (totalPiketOpportunitiesRecorded === 0) { reportDisplay.innerHTML = "<p>Belum ada data kehadiran relevan.</p>"; return; }
-
-                const reportDataArray = members.map(member => {
-                    const stats = memberStats[member];
-                    // Base percentage on scheduled duties they were assigned
-                    const percentage = stats.scheduled > 0 ? (stats.attended - stats.substituted) / stats.scheduled * 100 : 0;
-                    // Ensure percentage isn't negative if they only substituted
-                    const displayPercentage = Math.max(0, percentage);
-                    return {
-                        name: member,
-                        attended: stats.attended, // Total times present (incl. substituting)
-                        scheduled: stats.scheduled, // Times they were scheduled and attendance was recorded
-                        substituted: stats.substituted, // Times they substituted for others
-                        percentage: displayPercentage // Percentage of *their own scheduled* duties they attended
-                    };
-                });
-
-                reportDataArray.sort((a, b) => {
-                    if (b.percentage !== a.percentage) return b.percentage - a.percentage; // Primary sort: % of own schedule attended
-                    if (b.attended !== a.attended) return b.attended - a.attended; // Secondary sort: Total presence
-                    return a.name.localeCompare(b.name); // Tertiary sort: Name
-                });
-
-                reportDisplay.innerHTML = "";
-                displayReportSummary(reportDataArray); // Use the same summary function
-
-                reportDataArray.forEach(item => {
-                    const div = document.createElement("div"); div.classList.add("report-item");
-                    const nameSpan = document.createElement("span"); nameSpan.textContent = item.name + ": "; nameSpan.style.fontWeight = "bold";
-                    const statsSpan = document.createElement("span");
-                    // Updated stats text
-                    statsSpan.innerHTML = `Hadir <strong>${item.attended}</strong> kali (<strong>${item.substituted}</strong> kali menggantikan). Dijadwalkan <strong>${item.scheduled}</strong> kali.`;
-                    div.appendChild(nameSpan); div.appendChild(statsSpan);
-
-                    if (item.scheduled > 0) { // Show percentage bar based on their own schedule completion
-                        const barContainer = document.createElement("div"); barContainer.classList.add("report-bar-container");
-                        const bar = document.createElement("div"); bar.classList.add("report-bar");
-                        requestAnimationFrame(() => { bar.style.width = item.percentage + "%"; });
-                        if (item.percentage < 50) bar.classList.add("low");
-                        const pctSpan = document.createElement("span"); pctSpan.classList.add("report-text"); pctSpan.textContent = `(${item.percentage.toFixed(1)}% dari jadwal pribadi)`;
-                        barContainer.appendChild(bar); barContainer.appendChild(pctSpan); div.appendChild(barContainer);
-                    } else if (item.attended > 0) { // Attended only as substitute
-                         const subOnlyText = document.createElement("span"); subOnlyText.classList.add("report-text"); subOnlyText.style.marginLeft = "10px"; subOnlyText.style.color = 'var(--swap-color)'; subOnlyText.textContent = "(Hadir hanya sebagai pengganti)";
-                         div.appendChild(subOnlyText);
-                    }
-                     else { // No schedule recorded, no attendance
-                        const noData = document.createElement("span"); noData.classList.add("report-text"); noData.style.marginLeft = "10px"; noData.textContent = "(Tidak ada data piket tercatat)";
-                        div.appendChild(noData);
-                    }
-                    reportDisplay.appendChild(div);
-                });
-
+                const docRef = ordersCollection.doc(firestoreId);
+                await docRef.delete();
+                orders.splice(orderIndex, 1);
+                applyFilterAndSort();
+                showToast("Pesanan dihapus permanen.", "success");
             } catch (error) {
-                console.error("Error generating report:", error);
-                reportDisplay.innerHTML = "<p style='color:red;'>Gagal membuat laporan.</p>";
-                showNotification("Gagal membuat laporan.", "error");
+                console.error("Error deleting order: ", error);
+                showToast("Gagal menghapus pesanan.", "error");
             } finally {
-                setLoading(generateReportButton, false);
+                hideLoading();
             }
         }
+    }
+    function duplicateOrder(firestoreId) { const order = orders.find(o => o.firestoreId === firestoreId); if (!order) return; showSection('inputSection'); $('#clientName').value = order.clientName; $('#clientContact').value = order.clientContact || ''; $('#projectType').value = order.projectType; $('#projectPrice').value = order.projectPrice || ''; $('#orderDate').value = ''; $('#deadline').value = ''; $('#priority').value = order.priority; $('#attachmentLink').value = order.attachmentLink || ''; $('#projectTags').value = (order.projectTags || []).join(', '); $('#notes').value = order.notes || ''; $$('#orderForm .error-message').forEach(el => el.style.display = 'none'); $$('#orderForm .invalid').forEach(el => el.classList.remove('invalid')); $('#clientName').focus(); showToast("Form diisi u/ duplikasi. Isi tanggal.", "info"); }
+    async function requestRevision(firestoreId) { if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } const index = orders.findIndex(order => order.firestoreId === firestoreId); if (index === -1) return; const order = orders[index]; if (order.status !== 'Completed' || order.isArchived) { showToast("Revisi hanya bisa untuk status 'Completed' yg belum diarsip.", "warning"); return; } if (confirm(`Kembalikan status pesanan "${order.clientName}" ke 'In Progress' untuk revisi?`)) { showLoading(); const timestamp = new Date().toLocaleString('id-ID'); const updatedNotes = (order.notes || '') + `\n\n-- Revisi diminta pada ${timestamp} --`; try { const docRef = ordersCollection.doc(firestoreId); await docRef.update({ status: 'In Progress', notes: updatedNotes }); orders[index].status = 'In Progress'; orders[index].notes = updatedNotes; applyFilterAndSort(); showToast(`Pesanan "${order.clientName}" dikembalikan ke In Progress.`, "success"); } catch (error) { console.error("Error requesting revision: ", error); showToast("Gagal meminta revisi.", "error"); } finally { hideLoading(); } } }
+    const editModal = $('#editModal'); const editForm = $('#editForm');
+    function openEditModal(firestoreId) { const order = orders.find(o => o.firestoreId === firestoreId); if (!order) return; $('#editId').value = order.firestoreId; $('#editClientName').value = order.clientName; $('#editClientContact').value = order.clientContact || ''; $('#editProjectType').value = order.projectType; $('#editProjectPrice').value = order.projectPrice || ''; $('#editOrderDate').value = order.orderDate; $('#editDeadline').value = order.deadline; $('#editPriority').value = order.priority; $('#editStatus').value = order.status; $('#editAttachmentLink').value = order.attachmentLink || ''; $('#editProjectTags').value = (order.projectTags || []).join(', '); $('#editNotes').value = order.notes || ''; $$('#editForm .error-message').forEach(el => el.style.display = 'none'); $$('#editForm .invalid').forEach(el => el.classList.remove('invalid')); editModal.style.display = "block"; $('#editClientName').focus(); }
+    function closeEditModal() { editModal.style.display = "none"; editForm.reset(); }
+    editForm.addEventListener("submit", async function(e) { e.preventDefault(); if (!db) { showToast("Koneksi Database Gagal!", "error"); return; } if (!validateForm('editForm')) { showToast("Perbaiki error form edit.", "error"); this.querySelector('.invalid')?.focus(); return; } const firestoreId = $('#editId').value; if (!firestoreId) { showToast("ID Pesanan tidak valid.", "error"); return; } const updatedData = { clientName: $('#editClientName').value.trim(), clientContact: $('#editClientContact').value.trim(), projectType: $('#editProjectType').value, projectPrice: parseFloat($('#editProjectPrice').value) || 0, orderDate: $('#editOrderDate').value, deadline: $('#editDeadline').value, priority: $('#editPriority').value, status: $('#editStatus').value, attachmentLink: $('#editAttachmentLink').value.trim(), projectTags: parseTags($('#editProjectTags').value), notes: $('#editNotes').value.trim(), }; showLoading(); try { const docRef = ordersCollection.doc(firestoreId); await docRef.update(updatedData); const index = orders.findIndex(o => o.firestoreId === firestoreId); if (index !== -1) { orders[index] = { ...orders[index], ...updatedData }; } closeEditModal(); applyFilterAndSort(); showToast("Pesanan berhasil diperbarui!", "success"); } catch (error) { console.error("Error updating document: ", error); showToast("Gagal memperbarui pesanan.", "error"); } finally { hideLoading(); } });
+    window.onclick = (event) => { if (event.target == editModal) closeEditModal(); /* Close modal on overlay click */ }
+    window.addEventListener('keydown', (event) => { if (event.key === 'Escape') { if (editModal.style.display === "block") closeEditModal(); } }); // Removed dropdown close
 
-        // displayReportSummary remains the same, using the 'percentage' field which now reflects own schedule completion
-        function displayReportSummary(dataArr) { /* ... (unchanged) ... */ const filtered = dataArr.filter(m => m.scheduled > 0); if (!filtered.length) { /* Maybe add message if only substitutes exist */ return; } const summaryDiv = document.createElement("div"); summaryDiv.classList.add("report-summary"); const highest = filtered[0]; const lowest = filtered[filtered.length - 1]; let html = `<span class="positive">✅ <strong>Partisipasi Terbaik (Jadwal Pribadi):</strong> ${highest.name} (${highest.percentage.toFixed(1)}%)</span><br>`; if (filtered.length > 1 && highest.name !== lowest.name) { html += `<span class="needs-improvement">📈 <strong>Perlu Peningkatan (Jadwal Pribadi):</strong> ${lowest.name} (${lowest.percentage.toFixed(1)}%)</span>`; } else if (filtered.length === 1) { html += `<span class="info">ℹ️ (Hanya satu anggota dengan data jadwal pribadi)</span>`; } else { html += `<span class="info">ℹ️ (Data sama atau tidak cukup pembanding)</span>`; } summaryDiv.innerHTML = html; if (reportDisplay.firstChild) { reportDisplay.insertBefore(summaryDiv, reportDisplay.firstChild); } else { reportDisplay.appendChild(summaryDiv); } }
-        // exportReportToCSV needs update to include substitute count
-        function exportReportToCSV() {
-             const reportData = [];
-             const memberStats = {};
-             members.forEach(m => (memberStats[m] = { scheduled: 0, attended: 0, substituted: 0 }));
-             let hasRelevantData = false;
+    // --- FILTER, SORT, & PAGINATION ---
+    $('#searchInput').addEventListener('input', () => debounce(resetAndFilter)); $('#statusFilter').addEventListener('change', resetAndFilter); $('#priorityFilter').addEventListener('change', resetAndFilter); $('#tagFilter').addEventListener('input', () => debounce(resetAndFilter)); $('#startDateFilter').addEventListener('change', resetAndFilter); $('#endDateFilter').addEventListener('change', resetAndFilter); $('#showArchived').addEventListener('change', resetAndFilter);
+    $('#itemsPerPageSelect').addEventListener('change', (e) => { itemsPerPage = parseInt(e.target.value, 10); localStorage.setItem('itemsPerPage', itemsPerPage); resetAndFilter(); });
+    $('#prevPageBtn').addEventListener('click', () => { if (currentPage > 1) { currentPage--; applyFilterAndSort(); } }); $('#nextPageBtn').addEventListener('click', () => { const totalItems = filterOrders().length; const totalPages = Math.ceil(totalItems / itemsPerPage); if (currentPage < totalPages) { currentPage++; applyFilterAndSort(); } });
+    function resetAndFilter() { currentPage = 1; applyFilterAndSort(); }
+    function filterOrders() { const searchValue = $('#searchInput').value.toLowerCase(); const statusValue = $('#statusFilter').value; const priorityValue = $('#priorityFilter').value; const tagValue = $('#tagFilter').value.toLowerCase().trim(); const showArchived = $('#showArchived').checked; const startDateValue = $('#startDateFilter').value; const endDateValue = $('#endDateFilter').value; return orders.filter(order => { const isOrderArchived = order.isArchived === true; if (showArchived !== isOrderArchived) return false; const matchStatus = !statusValue || order.status === statusValue; const matchPriority = !priorityValue || order.priority === priorityValue; const matchTag = !tagValue || (order.projectTags && order.projectTags.some(tag => tag.toLowerCase().includes(tagValue))); const matchSearch = !searchValue || ( order.clientName.toLowerCase().includes(searchValue) || (order.clientContact && order.clientContact.toLowerCase().includes(searchValue)) || order.projectType.toLowerCase().includes(searchValue) || (order.notes && order.notes.toLowerCase().includes(searchValue)) || (order.projectTags && order.projectTags.some(tag => tag.toLowerCase().includes(searchValue))) ); let matchDate = true; if (startDateValue && order.orderDate < startDateValue) matchDate = false; if (endDateValue && order.orderDate > endDateValue) matchDate = false; return matchStatus && matchPriority && matchTag && matchSearch && matchDate; }); }
+    function applyFilterAndSort() { const filtered = filterOrders(); const priorityOrder = { High: 3, Medium: 2, Low: 1 }; filtered.sort((a, b) => { const col = currentSort.column; const dir = currentSort.direction === 'asc' ? 1 : -1; let valA = a[col]; let valB = b[col]; if (col === 'priority') { valA = priorityOrder[valA] || 0; valB = priorityOrder[valB] || 0; } else if (col === 'projectPrice') { valA = Number(valA) || 0; valB = Number(valB) || 0; } else if (col === 'orderDate' || col === 'deadline') { valA = valA || ''; valB = valB || ''; } else { valA = String(valA || '').toLowerCase(); valB = String(valB || '').toLowerCase(); } if (valA < valB) return -1 * dir; if (valA > valB) return 1 * dir; const idA = a.firestoreId || ''; const idB = b.firestoreId || ''; if (idA < idB) return -1; if (idA > idB) return 1; return 0; }); const totalItems = filtered.length; const totalPages = Math.ceil(totalItems / itemsPerPage) || 1; currentPage = Math.max(1, Math.min(currentPage, totalPages)); const startIndex = (currentPage - 1) * itemsPerPage; const endIndex = startIndex + itemsPerPage; const paginatedItems = filtered.slice(startIndex, endIndex); updateSortIndicators(); renderTable(paginatedItems); renderPaginationControls(currentPage, totalPages, totalItems); updateBulkActionUI(); }
+    function setSort(column) { if (currentSort.column === column) currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc'; else { currentSort.column = column; currentSort.direction = 'asc'; } currentPage = 1; applyFilterAndSort(); }
+    function updateSortIndicators() { $$('th.th-sorted').forEach(th => th.classList.remove('th-sorted')); $$('th .sort-indicator').forEach(indicator => { indicator.textContent = ''; indicator.classList.remove('active'); }); const currentTh = $(`th[onclick*="setSort('${currentSort.column}')"]`); if (currentTh) { currentTh.classList.add('th-sorted'); const indicator = currentTh.querySelector('.sort-indicator'); if (indicator) { indicator.textContent = currentSort.direction === 'asc' ? ' ▲' : ' ▼'; indicator.classList.add('active'); } } }
+    function renderPaginationControls(page, totalPages, totalItems) { const pageInfo = $('#pageInfo'); const prevBtn = $('#prevPageBtn'); const nextBtn = $('#nextPageBtn'); if (totalItems === 0) pageInfo.textContent = "Tidak ada data"; else { const startItem = (page - 1) * itemsPerPage + 1; const endItem = Math.min(startItem + itemsPerPage - 1, totalItems); pageInfo.textContent = `Menampilkan ${startItem}-${endItem} dari ${totalItems} | Hal ${page} dari ${totalPages}`; } prevBtn.disabled = page <= 1; nextBtn.disabled = page >= totalPages; $('#paginationControls').style.display = totalItems > 0 ? 'flex' : 'none'; }
 
-             for (const date in attendance) {
-                 const dateObj = new Date(date + "T00:00:00"); if (isNaN(dateObj.getTime())) continue;
-                 const dayName = daysInIndonesian[dateObj.getDay()]; const scheduledMembersOnDate = schedule[dayName] || []; const dailyRecord = attendance[date];
-                 scheduledMembersOnDate.forEach(member => { if (memberStats[member] && dailyRecord) { memberStats[member].scheduled++; hasRelevantData = true; } });
-                 Object.keys(dailyRecord).forEach(memberName => { if (memberStats[memberName]) { const record = dailyRecord[memberName]; if (record.present === true) { memberStats[memberName].attended++; if (record.isSubstitute) memberStats[memberName].substituted++; hasRelevantData = true; } } });
-             }
+    // --- RENDERING ---
+    function renderTable(ordersToRender) {
+        const tbody = $('#orderTable'); const noOrdersMsg = $('#noOrdersMsg'); tbody.innerHTML = ""; const selectAllCheckbox = $('#selectAllCheckbox'); if (selectAllCheckbox) selectAllCheckbox.checked = false;
+        if (ordersToRender.length === 0) { noOrdersMsg.style.display = 'block'; tbody.closest('table').style.display = 'none'; updateBulkActionUI(); return; }
+        noOrdersMsg.style.display = 'none'; tbody.closest('table').style.display = ''; const today = new Date(); today.setHours(0,0,0,0); const fragment = document.createDocumentFragment();
+        ordersToRender.forEach(order => {
+            const tr = document.createElement("tr"); tr.dataset.orderId = order.firestoreId;
+            if (order.isArchived) tr.classList.add('archived'); if (selectedOrderIds.has(order.firestoreId)) tr.classList.add('selected');
+            let deadlineText = formatDate(order.deadline); let deadlineClass = '';
+            if (order.deadline && !order.isArchived && order.status !== "Completed" && order.status !== "Delivered") { const deadlineDate = new Date(order.deadline + 'T00:00:00'); if (!isNaN(deadlineDate.getTime())) { deadlineDate.setHours(0,0,0,0); const diffTime = deadlineDate - today; const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)); if (diffDays < 0) { deadlineText += ` <span style="font-weight: bold;">(Lewat ${Math.abs(diffDays)} hr)</span>`; deadlineClass = 'deadline-past'; } else if (diffDays <= 3) { deadlineText += ` <span style="font-weight: bold;">(${diffDays} hr lagi)</span>`; deadlineClass = 'deadline-soon'; } else { deadlineText += ` <span>(${diffDays} hr lagi)</span>`; } if (deadlineClass) tr.classList.add(deadlineClass); } }
+            const prioritySelectHtml = `<select class="inline-priority-select" onchange="updatePriority('${order.firestoreId}', this.value)" ${order.isArchived ? 'disabled' : ''} title="Ubah Prioritas"> <option value="Low" ${order.priority === "Low" ? "selected" : ""}>Rendah</option> <option value="Medium" ${order.priority === "Medium" ? "selected" : ""}>Sedang</option> <option value="High" ${order.priority === "High" ? "selected" : ""}>Tinggi</option> </select>`;
+            const tagsHtml = (order.projectTags && order.projectTags.length > 0) ? order.projectTags.map(tag => `<span class="tag-badge" title="${tag}">${tag.length > 15 ? tag.substring(0, 13)+'...' : tag}</span>`).join('') : '-';
+            const linkHtml = order.attachmentLink ? `<a href="${sanitizeUrl(order.attachmentLink)}" target="_blank" rel="noopener noreferrer" title="${order.attachmentLink}">Link <span class="link-icon">🔗</span></a>` : '-';
+            // --- ACTION BUTTONS (DIRECTLY VISIBLE) ---
+            let actionButtonsHtml = '';
+            if (order.isArchived) {
+                actionButtonsHtml = `<button class="secondary action-button" onclick="unarchiveOrder('${order.firestoreId}')" title="Pulihkan"><span>⤴️</span></button> <button class="danger action-button" onclick="deleteOrderPermanently('${order.firestoreId}')" title="Hapus Permanen"><span>🗑️</span></button>`;
+            } else if (order.status === 'Completed') {
+                actionButtonsHtml = `<button class="secondary action-button" onclick="openEditModal('${order.firestoreId}')" title="Edit"><span>✏️</span></button> <button class="revision action-button" onclick="requestRevision('${order.firestoreId}')" title="Minta Revisi"><span>🔄</span></button> <button class="info action-button" onclick="duplicateOrder('${order.firestoreId}')" title="Duplikasi"><span>➕</span></button> <button class="warning action-button" onclick="archiveOrder('${order.firestoreId}')" title="Arsipkan"><span>📁</span></button> <button class="danger action-button" onclick="deleteOrderPermanently('${order.firestoreId}')" title="Hapus"><span>🗑️</span></button>`;
+            } else if (order.status === 'Delivered') {
+                 actionButtonsHtml = `<button class="secondary action-button" onclick="openEditModal('${order.firestoreId}')" title="Edit"><span>✏️</span></button> <button class="info action-button" onclick="duplicateOrder('${order.firestoreId}')" title="Duplikasi"><span>➕</span></button> <button class="warning action-button" onclick="archiveOrder('${order.firestoreId}')" title="Arsipkan"><span>📁</span></button> <button class="danger action-button" onclick="deleteOrderPermanently('${order.firestoreId}')" title="Hapus"><span>🗑️</span></button>`;
+            } else { // Pending or In Progress
+                 actionButtonsHtml = `<button class="secondary action-button" onclick="openEditModal('${order.firestoreId}')" title="Edit"><span>✏️</span></button> <button class="info action-button" onclick="duplicateOrder('${order.firestoreId}')" title="Duplikasi"><span>➕</span></button> <button class="warning action-button" onclick="archiveOrder('${order.firestoreId}')" title="Arsipkan"><span>📁</span></button> <button class="danger action-button" onclick="deleteOrderPermanently('${order.firestoreId}')" title="Hapus"><span>🗑️</span></button>`;
+            }
+            const notesDisplay = (order.notes || '-').substring(0, 40); const notesEllipsis = order.notes && order.notes.length > 40 ? '...' : ''; const notesTitle = order.notes || 'Tidak ada catatan';
+            const contactDisplay = (order.clientContact || '-').substring(0, 20); const contactEllipsis = order.clientContact && order.clientContact.length > 20 ? '...' : ''; const contactTitle = order.clientContact || 'Tidak ada kontak';
+            tr.innerHTML = `
+                <td class="col-checkbox"><input type="checkbox" class="row-checkbox" data-id="${order.firestoreId}" ${selectedOrderIds.has(order.firestoreId) ? 'checked' : ''} aria-label="Pilih ${order.clientName}"></td>
+                <td data-label="Klien">${order.clientName}</td> <td data-label="Kontak" title="${contactTitle}">${contactDisplay}${contactEllipsis}</td>
+                <td data-label="Project">${order.projectType}</td> <td data-label="Harga" class="col-price">${formatCurrency(order.projectPrice)}</td>
+                <td data-label="Order">${formatDate(order.orderDate)}</td> <td data-label="Deadline">${deadlineText}</td>
+                <td data-label="Prioritas" class="text-center">${prioritySelectHtml}</td>
+                <td data-label="Status"> <select class="status-select" onchange="updateStatus('${order.firestoreId}', this.value)" ${order.isArchived || order.status === 'Delivered' ? 'disabled' : ''} title="Ubah Status Pesanan"> <option value="Pending" ${order.status === "Pending" ? "selected" : ""}>Pending</option> <option value="In Progress" ${order.status === "In Progress" ? "selected" : ""}>In Progress</option> <option value="Completed" ${order.status === "Completed" ? "selected" : ""}>Completed</option> <option value="Delivered" ${order.status === "Delivered" ? "selected" : ""}>Delivered</option> </select> </td>
+                <td data-label="Tags" class="col-tags">${tagsHtml}</td> <td data-label="Link" class="col-link">${linkHtml}</td>
+                <td data-label="Catatan" class="col-notes" title="${notesTitle}">${notesDisplay}${notesEllipsis}</td>
+                <td data-label="Aksi" class="action-buttons">${actionButtonsHtml}</td> `;
+            fragment.appendChild(tr);
+        });
+        tbody.appendChild(fragment); addCheckboxListeners();
+    }
 
-             if (!hasRelevantData) { showNotification("Tidak ada data laporan relevan.", "warning"); return; }
+     // Removed Action Menu Dropdown Logic
 
-             const reportDataArray = members.map(member => {
-                 const stats = memberStats[member];
-                 const percentage = stats.scheduled > 0 ? Math.max(0, (stats.attended - stats.substituted) / stats.scheduled * 100) : 0;
-                 return { name: member, attended: stats.attended, scheduled: stats.scheduled, substituted: stats.substituted, percentage: percentage };
-             }).sort((a, b) => { if (b.percentage !== a.percentage) return b.percentage - a.percentage; if (b.attended !== a.attended) return b.attended - a.attended; return a.name.localeCompare(b.name); });
+    // --- BULK ACTIONS (FIRESTORE) ---
+    function addCheckboxListeners() { $$('.row-checkbox').forEach(checkbox => { checkbox.addEventListener('change', (e) => { const firestoreId = e.target.dataset.id; const tr = e.target.closest('tr'); if (e.target.checked) { selectedOrderIds.add(firestoreId); tr?.classList.add('selected'); } else { selectedOrderIds.delete(firestoreId); tr?.classList.remove('selected'); } updateBulkActionUI(); }); }); }
+    $('#selectAllCheckbox')?.addEventListener('change', (e) => { const isChecked = e.target.checked; $$('.row-checkbox').forEach(checkbox => { const firestoreId = checkbox.dataset.id; const tr = checkbox.closest('tr'); checkbox.checked = isChecked; if (isChecked) { selectedOrderIds.add(firestoreId); tr?.classList.add('selected'); } else { selectedOrderIds.delete(firestoreId); tr?.classList.remove('selected'); } }); updateBulkActionUI(); });
+    function updateBulkActionUI() { const count = selectedOrderIds.size; const container = $('#bulkActionsContainer'); const countSpan = $('#selectedCount'); const changeStatusBtn = $('#bulkChangeStatusBtn'); const archiveBtn = $('#bulkArchiveBtn'); const deleteBtn = $('#bulkDeleteBtn'); const statusSelect = $('#bulkStatusChange'); if (!container || !countSpan || !changeStatusBtn || !archiveBtn || !deleteBtn || !statusSelect) return; if (count > 0) { container.classList.add('visible'); countSpan.textContent = count; let hasActive = false; let hasArchived = false; selectedOrderIds.forEach(id => { const order = orders.find(o => o.firestoreId === id); if (order) { if (order.isArchived) hasArchived = true; else hasActive = true; } }); const currentViewIsArchived = $('#showArchived').checked; const canArchive = hasActive && !hasArchived; const canDelete = hasArchived && !hasActive && currentViewIsArchived; changeStatusBtn.disabled = !statusSelect.value || !canArchive; archiveBtn.disabled = !canArchive; deleteBtn.disabled = !canDelete; } else { container.classList.remove('visible'); countSpan.textContent = 0; changeStatusBtn.disabled = true; archiveBtn.disabled = true; deleteBtn.disabled = true; statusSelect.value = ''; } }
+    $('#bulkStatusChange')?.addEventListener('change', updateBulkActionUI);
+    $('#bulkChangeStatusBtn')?.addEventListener('click', async () => { if (!db) return; const newStatus = $('#bulkStatusChange').value; if (!newStatus || selectedOrderIds.size === 0) return; const count = selectedOrderIds.size; if (!confirm(`Ubah status ${count} pesanan AKTIF terpilih menjadi "${newStatus}"?`)) return; showLoading(); const batch = db.batch(); let changedCount = 0; selectedOrderIds.forEach(id => { const order = orders.find(o => o.firestoreId === id); if (order && !order.isArchived) { const docRef = ordersCollection.doc(id); batch.update(docRef, { status: newStatus }); changedCount++; } }); try { await batch.commit(); if (changedCount > 0) { selectedOrderIds.forEach(id => { const index = orders.findIndex(o => o.firestoreId === id && !o.isArchived); if (index !== -1) orders[index].status = newStatus; }); selectedOrderIds.clear(); applyFilterAndSort(); showToast(`${changedCount} status pesanan diubah.`, "success"); } else { showToast("Tdk ada status pesanan aktif yg diubah.", "info"); updateBulkActionUI(); } } catch (error) { console.error("Error bulk changing status:", error); showToast("Gagal mengubah status masal.", "error"); } finally { hideLoading(); } });
+    $('#bulkArchiveBtn')?.addEventListener('click', async () => { if (!db) return; if (selectedOrderIds.size === 0) return; const count = selectedOrderIds.size; if (!confirm(`Arsipkan ${count} pesanan AKTIF terpilih?`)) return; showLoading(); const batch = db.batch(); let changedCount = 0; selectedOrderIds.forEach(id => { const order = orders.find(o => o.firestoreId === id); if (order && !order.isArchived) { const docRef = ordersCollection.doc(id); batch.update(docRef, { isArchived: true }); changedCount++; } }); try { await batch.commit(); if (changedCount > 0) { selectedOrderIds.forEach(id => { const index = orders.findIndex(o => o.firestoreId === id && !o.isArchived); if (index !== -1) orders[index].isArchived = true; }); selectedOrderIds.clear(); applyFilterAndSort(); showToast(`${changedCount} pesanan diarsipkan.`, "success"); } else { showToast("Tdk ada pesanan aktif yg diarsipkan.", "info"); updateBulkActionUI(); } } catch (error) { console.error("Error bulk archiving:", error); showToast("Gagal mengarsipkan masal.", "error"); } finally { hideLoading(); } });
+    $('#bulkDeleteBtn')?.addEventListener('click', async () => { if (!db) return; if (selectedOrderIds.size === 0 || !$('#showArchived').checked) return; let allArchived = true; selectedOrderIds.forEach(id => { const order = orders.find(o => o.firestoreId === id); if (order && !order.isArchived) allArchived = false; }); if (!allArchived) { showToast("Hanya pesanan arsip yg bisa dihapus masal.", "error"); return; } const count = selectedOrderIds.size; if (!confirm(`HAPUS PERMANEN ${count} pesanan arsip? Tidak bisa dibatalkan!`)) return; showLoading(); const batch = db.batch(); let deletedFirestoreIds = new Set(); selectedOrderIds.forEach(id => { const docRef = ordersCollection.doc(id); batch.delete(docRef); deletedFirestoreIds.add(id); }); try { await batch.commit(); const initialLength = orders.length; orders = orders.filter(order => !deletedFirestoreIds.has(order.firestoreId)); const changedCount = initialLength - orders.length; selectedOrderIds.clear(); applyFilterAndSort(); showToast(`${changedCount} pesanan arsip dihapus.`, "success"); } catch (error) { console.error("Error bulk deleting:", error); showToast("Gagal menghapus masal.", "error"); } finally { hideLoading(); } });
 
-             let csvContent = "data:text/csv;charset=utf-8,";
-             // Add new column header
-             csvContent += "Nama Anggota,Jadwal Tercatat,Total Hadir,Kali Menggantikan,Persentase Kehadiran Jadwal Pribadi (%)\r\n";
-             reportDataArray.forEach(row => {
-                 const safeName = `"${row.name.replace(/"/g, '""')}"`;
-                 // Add substituted data to row
-                 const rowData = [ safeName, row.scheduled, row.attended, row.substituted, row.percentage.toFixed(1) ];
-                 csvContent += rowData.join(",") + "\r\n";
-             });
+    // --- DASHBOARD ---
+    function updateDashboard() { const activeOrders = orders.filter(o => !o.isArchived); const statusCounts = { Pending: 0, 'In Progress': 0, Completed: 0, Delivered: 0 }; let totalActiveValue = 0; activeOrders.forEach(o => { if(statusCounts.hasOwnProperty(o.status)) statusCounts[o.status]++; totalActiveValue += Number(o.projectPrice) || 0; }); $('#pendingCount').textContent = statusCounts.Pending; $('#progressCount').textContent = statusCounts['In Progress']; $('#completedCount').textContent = statusCounts.Completed; $('#deliveredCount').textContent = statusCounts.Delivered; $('#totalValueActive').textContent = formatCurrency(totalActiveValue); const recentTable = $('#recentOrdersTable'); const noRecentMsg = $('#noRecentOrdersMsg'); recentTable.innerHTML = ""; const sortedForRecent = activeOrders.sort((a, b) => (b.firestoreId || '').localeCompare(a.firestoreId || '')); const latestFive = sortedForRecent.slice(0, 5); if (latestFive.length === 0) { noRecentMsg.style.display = 'block'; recentTable.closest('.table-container').style.display = 'none'; } else { noRecentMsg.style.display = 'none'; recentTable.closest('.table-container').style.display = ''; const fragment = document.createDocumentFragment(); latestFive.forEach(order => { const tr = document.createElement("tr"); tr.innerHTML = `<td data-label="Klien">${order.clientName}</td> <td data-label="Project">${order.projectType}</td> <td data-label="Harga" class="text-right">${formatCurrency(order.projectPrice)}</td> <td data-label="Status">${order.status}</td> <td data-label="Prioritas" class="text-center"><span class="priority-badge priority-${order.priority}">${order.priority}</span></td>`; fragment.appendChild(tr); }); recentTable.appendChild(fragment); } }
 
-             const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); const today = new Date().toISOString().slice(0, 10); link.setAttribute("download", `laporan_partisipasi_osis_${today}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); showNotification("Laporan CSV diunduh.", "success");
-         }
+    // --- LAPORAN ---
+    const reportProjectTypeFilter = $('#reportProjectTypeFilter'); const reportStartDateFilter = $('#reportStartDateFilter'); const reportEndDateFilter = $('#reportEndDateFilter'); const resetReportFiltersBtn = $('#resetReportFiltersBtn');
+    function populateReportProjectTypeFilter() { const types = [...new Set(orders.map(o => o.projectType))].sort(); reportProjectTypeFilter.innerHTML = '<option value="">-- Semua Jenis Project --</option>'; types.forEach(type => { const option = document.createElement('option'); option.value = type; option.textContent = type; reportProjectTypeFilter.appendChild(option); }); }
+    reportProjectTypeFilter?.addEventListener('change', generateReport); reportStartDateFilter?.addEventListener('change', generateReport); reportEndDateFilter?.addEventListener('change', generateReport);
+    resetReportFiltersBtn?.addEventListener('click', () => { reportProjectTypeFilter.value = ''; reportStartDateFilter.value = ''; reportEndDateFilter.value = ''; generateReport(); });
+    function getChartColors() { const isDarkMode = document.body.classList.contains('dark-mode'); const bodyStyle = getComputedStyle(document.body); return { status: { Pending: bodyStyle.getPropertyValue('--warning-color').trim(), 'In Progress': bodyStyle.getPropertyValue('--info-color').trim(), Completed: bodyStyle.getPropertyValue('--success-color').trim(), Delivered: bodyStyle.getPropertyValue('--revision-color').trim() }, projectTypes: isDarkMode ? ['#ef5350', '#42a5f5', '#66bb6a', '#ffa726', '#ab47bc', '#78909c', '#ec407a', '#26a69a', '#ffca28', '#d4e157'] : ['#dc3545', '#0d6efd', '#198754', '#ffc107', '#6f42c1', '#6c757d', '#fd7e14', '#20c997', '#ffc107', '#adb5bd'], textColor: bodyStyle.getPropertyValue('--text-color').trim(), gridColor: isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)' }; }
+    let currentClientReportData = [];
+    function generateReport() { const reportTypeFilterValue = reportProjectTypeFilter.value; const reportStartValue = reportStartDateFilter.value; const reportEndValue = reportEndDateFilter.value; let filteredActiveOrders = orders.filter(o => !o.isArchived); if (reportTypeFilterValue) filteredActiveOrders = filteredActiveOrders.filter(o => o.projectType === reportTypeFilterValue); if (reportStartValue) filteredActiveOrders = filteredActiveOrders.filter(o => o.orderDate && o.orderDate >= reportStartValue); if (reportEndValue) filteredActiveOrders = filteredActiveOrders.filter(o => o.orderDate && o.orderDate <= reportEndValue); const archivedOrdersCount = orders.filter(o => o.isArchived).length; const totalActiveOrders = filteredActiveOrders.length; let totalActiveValue = 0; const statusValue = { Pending: 0, 'In Progress': 0, Completed: 0, Delivered: 0 }; const statusCounts = { Pending: 0, 'In Progress': 0, Completed: 0, Delivered: 0 }; const typeCounts = {}; const clientSummary = {}; const monthlyCounts = {}; filteredActiveOrders.forEach(o => { totalActiveValue += Number(o.projectPrice) || 0; if (statusValue.hasOwnProperty(o.status)) statusValue[o.status] += Number(o.projectPrice) || 0; if (statusCounts.hasOwnProperty(o.status)) statusCounts[o.status]++; typeCounts[o.projectType] = (typeCounts[o.projectType] || 0) + 1; if (!clientSummary[o.clientName]) clientSummary[o.clientName] = { count: 0, value: 0 }; clientSummary[o.clientName].count++; clientSummary[o.clientName].value += Number(o.projectPrice) || 0; if (o.orderDate?.length >= 7) { const yearMonth = o.orderDate.substring(0, 7); monthlyCounts[yearMonth] = (monthlyCounts[yearMonth] || 0) + 1; } }); $('#reportTotalActiveOrders').textContent = totalActiveOrders; $('#reportTotalArchivedOrders').textContent = archivedOrdersCount; $('#reportTotalActiveValue').textContent = formatCurrency(totalActiveValue); const statusCtx = $('#statusChart').getContext('2d'); const projectCtx = $('#projectTypeChart').getContext('2d'); const trendCtx = $('#trendChart').getContext('2d'); const reportStatusElement = $('#reportProjectStatus'); const reportTypeElement = $('#reportProjectType'); const reportValueElement = $('#reportProjectValue'); const clientTableBody = $('#clientSummaryTable tbody'); const colors = getChartColors(); if (statusChartInstance) statusChartInstance.destroy(); if (projectTypeChartInstance) projectTypeChartInstance.destroy(); if (trendChartInstance) trendChartInstance.destroy(); reportStatusElement.innerHTML = ''; reportTypeElement.innerHTML = ''; reportValueElement.innerHTML = ''; clientTableBody.innerHTML = ''; const emptyChartMsg = '<p class="empty-message" style="padding: 20px 0;">Tidak ada data aktif sesuai filter.</p>'; if (totalActiveOrders === 0) { reportStatusElement.innerHTML = emptyChartMsg; reportTypeElement.innerHTML = emptyChartMsg; reportValueElement.innerHTML = emptyChartMsg; clientTableBody.innerHTML = `<tr><td colspan="3">${emptyChartMsg}</td></tr>`; statusCtx.canvas.style.display = 'none'; projectCtx.canvas.style.display = 'none'; trendCtx.canvas.style.display = 'none'; return; } statusCtx.canvas.style.display = 'block'; projectCtx.canvas.style.display = 'block'; trendCtx.canvas.style.display = 'block'; statusChartInstance = new Chart(statusCtx, { type: 'doughnut', data: { labels: Object.keys(statusCounts), datasets: [{ label: 'Status (Jumlah)', data: Object.values(statusCounts), backgroundColor: Object.keys(statusCounts).map(label => colors.status[label] || '#cccccc'), borderColor: colors.gridColor, borderWidth: 1, hoverOffset: 4 }] }, options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { color: colors.textColor, padding: 15 } }, tooltip: { callbacks: { label: ctx => ` ${ctx.label}: ${ctx.raw} (${(ctx.raw / totalActiveOrders * 100).toFixed(1)}%)` } } } } }); const sortedTypes = Object.entries(typeCounts).sort(([,a],[,b]) => b-a); projectTypeChartInstance = new Chart(projectCtx, { type: 'bar', data: { labels: sortedTypes.map(([label]) => label), datasets: [{ label: 'Jumlah per Tipe', data: sortedTypes.map(([,data]) => data), backgroundColor: sortedTypes.map((_, index) => colors.projectTypes[index % colors.projectTypes.length]), borderColor: sortedTypes.map((_, index) => colors.projectTypes[index % colors.projectTypes.length]), borderWidth: 1, borderRadius: 3 }] }, options: { responsive: true, maintainAspectRatio: false, indexAxis: 'y', scales: { x: { ticks: { color: colors.textColor, precision: 0 }, grid: { color: colors.gridColor, drawBorder: false } }, y: { ticks: { color: colors.textColor }, grid: { display: false, drawBorder: false } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { label: ctx => ` ${ctx.raw} order` } } } } }); let valueReportHtml = '<ul>'; Object.keys(statusValue).forEach(status => { valueReportHtml += `<li><span class="status-color-dot" style="background-color: ${colors.status[status] || '#ccc'};"></span> ${status}: <strong>${formatCurrency(statusValue[status])}</strong></li>`; }); valueReportHtml += `<li class="total-value"><strong>Total Nilai Aktif:</strong> <strong>${formatCurrency(totalActiveValue)}</strong></li></ul>`; reportValueElement.innerHTML = valueReportHtml; currentClientReportData = Object.entries(clientSummary); sortClientTable(clientReportSort.column, clientReportSort.direction); const sortedMonths = Object.keys(monthlyCounts).sort(); const trendLabels = sortedMonths.map(month => new Date(month + '-01T00:00:00')); const trendData = sortedMonths.map(month => monthlyCounts[month]); trendChartInstance = new Chart(trendCtx, { type: 'line', data: { datasets: [{ label: 'Jumlah Order Masuk', data: trendLabels.map((date, index) => ({x: date, y: trendData[index]})), borderColor: colors.accentColor || '#007bff', backgroundColor: colors.accentColor ? colors.accentColor + '33' : '#007bff33', tension: 0.1, fill: true, pointBackgroundColor: colors.accentColor || '#007bff', pointRadius: 4, pointHoverRadius: 6, }] }, options: { responsive: true, maintainAspectRatio: false, scales: { x: { type: 'time', time: { unit: 'month', tooltipFormat: 'MMM yyyy', displayFormats: { month: 'MMM yyyy' } }, title: { display: true, text: 'Bulan Order', color: colors.textColor }, ticks: { color: colors.textColor }, grid: { color: colors.gridColor } }, y: { title: { display: true, text: 'Jumlah Order', color: colors.textColor }, ticks: { color: colors.textColor, precision: 0 }, grid: { color: colors.gridColor } } }, plugins: { legend: { display: false }, tooltip: { callbacks: { title: ctx => ctx[0].label, label: ctx => ` ${ctx.raw} order` } } } } }); }
+    function sortClientTable(columnIndex, direction = null) { const clientTableBody = $('#clientSummaryTable tbody'); const dir = direction ? direction : (clientReportSort.column === columnIndex ? (clientReportSort.direction === 'asc' ? 'desc' : 'asc') : 'desc'); clientReportSort = { column: columnIndex, direction: dir }; currentClientReportData.sort((a, b) => { let valA, valB; const dataA = a[1]; const dataB = b[1]; const nameA = a[0]; const nameB = b[0]; if (columnIndex === 0) { valA = nameA || ''; valB = nameB || ''; } else if (columnIndex === 1) { valA = dataA.count || 0; valB = dataB.count || 0; } else { valA = dataA.value || 0; valB = dataB.value || 0; } const sortDir = dir === 'asc' ? 1 : -1; if (valA < valB) return -1 * sortDir; if (valA > valB) return 1 * sortDir; return 0; }); clientTableBody.innerHTML = ''; const fragment = document.createDocumentFragment(); currentClientReportData.slice(0, 10).forEach(([name, data]) => { const tr = document.createElement('tr'); tr.innerHTML = `<td>${name}</td><td class="text-center">${data.count}</td><td class="text-right">${formatCurrency(data.value)}</td>`; fragment.appendChild(tr); }); clientTableBody.appendChild(fragment); }
 
+    // --- EXPORT TO CSV ---
+    function exportToCSV() { const showArchived = $('#showArchived').checked; const ordersToExport = orders.filter(order => order.isArchived === showArchived); if (ordersToExport.length === 0) { showToast(`Tidak ada data ${showArchived ? 'arsip' : 'aktif'} untuk diekspor.`, "info"); return; } const headers = ['ID', 'Nama Klien', 'Kontak Klien', 'Jenis Project', 'Harga', 'Tanggal Order', 'Deadline', 'Prioritas', 'Status', 'Tags', 'Link Lampiran', 'Catatan']; const rows = ordersToExport.map(order => [ order.firestoreId, `"${(order.clientName || '').replace(/"/g, '""')}"`, `"${(order.clientContact || '').replace(/"/g, '""')}"`, order.projectType, order.projectPrice || 0, order.orderDate, order.deadline, order.priority, order.status, `"${(order.projectTags || []).join(', ').replace(/"/g, '""')}"`, `"${(order.attachmentLink || '').replace(/"/g, '""')}"`, `"${(order.notes || '').replace(/"/g, '""')}"` ]); let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n"); const encodedUri = encodeURI(csvContent); const link = document.createElement("a"); link.setAttribute("href", encodedUri); const timestamp = new Date().toISOString().slice(0, 10); const fileType = showArchived ? 'arsip' : 'aktif'; link.setAttribute("download", `project_klien_${fileType}_${timestamp}.csv`); document.body.appendChild(link); link.click(); document.body.removeChild(link); showToast(`Data ${fileType} diekspor ke CSV.`, "success"); }
 
-        /***********************************************************************
-         *     12) BACKUP & RESTORE (Unchanged)                              *
-         ***********************************************************************/
-        function backupData() { /* ... (unchanged) ... */ setLoading(backupButton, true); try { const dataToBackup = { members: [...members], schedule: JSON.parse(JSON.stringify(schedule)), attendance: JSON.parse(JSON.stringify(attendance)), backupDate: new Date().toISOString() }; const jsonString = JSON.stringify(dataToBackup, null, 2); backupDataArea.value = jsonString; backupDataArea.select(); showNotification("Backup data (memori) dibuat.", "success"); } catch (err) { console.error("Error creating backup:", err); showNotification("Gagal backup.", "error"); } finally { setLoading(backupButton, false); } }
-        async function restoreData() { /* ... (unchanged) ... */ const backupJSON = restoreDataArea.value.trim(); if (!backupJSON) { showNotification("Area restore kosong.", "warning"); return; } setLoading(restoreButton, true); showNotification("Memulai restore...", "info"); try { const restoredData = JSON.parse(backupJSON); if (!Array.isArray(restoredData.members) || typeof restoredData.schedule !== 'object' || typeof restoredData.attendance !== 'object') { throw new Error("Format backup tidak valid."); } await resetAllDataAction(); const batcher = writeBatch(db); let writeCount = 0; restoredData.members.forEach(memberName => { if (typeof memberName === 'string' && memberName.trim()) { const newMemberRef = doc(collection(db, "members")); batcher.set(newMemberRef, { name: memberName.trim() }); writeCount++; } }); for (const day in restoredData.schedule) { if (daysInIndonesian.includes(day) && Array.isArray(restoredData.schedule[day])) { const scheduleRef = doc(db, "schedules", day); batcher.set(scheduleRef, { day: day, members: restoredData.schedule[day] }); writeCount++; } } for (const date in restoredData.attendance) { if (/^\d{4}-\d{2}-\d{2}$/.test(date) && typeof restoredData.attendance[date] === 'object') { const attendanceRef = doc(db, "attendance", date); const validRecords = migrateAttendanceObject(restoredData.attendance[date]); if (Object.keys(validRecords).length > 0) { batcher.set(attendanceRef, { date: date, records: validRecords }); writeCount++; } } } if (writeCount > 490) { console.warn("Operasi restore mendekati limit."); } await batcher.commit(); await loadAllData(); displayMembers(modalMemberSearchInput.value); displaySchedule(); populateAwardMonthSelect(); attendanceMarkingDiv.classList.remove('visible'); attendanceStatusDiv.innerHTML = ""; reportDisplay.innerHTML = ""; restoreDataArea.value = ""; showNotification("Restore data berhasil!", "success"); } catch (err) { console.error("Error during restore:", err); showNotification(`Gagal restore: ${err.message}.`, "error"); } finally { setLoading(restoreButton, false); } }
-        async function resetAllData(askConfirm = true) { /* ... (unchanged) ... */ if (askConfirm) { showConfirmationModal('Konfirmasi Reset Aplikasi', `<strong>PERINGATAN KERAS!</strong> Hapus SEMUA data di Firestore?<br>Tidak dapat dibatalkan. Yakin?`, () => resetAllDataAction(), 'danger'); } else { await resetAllDataAction(); } }
-        async function resetAllDataAction() { /* ... (unchanged) ... */ setLoading(resetButton, true); showNotification("Memulai reset Firestore...", "info"); try { const collectionsToDelete = ["members", "schedules", "attendance"]; const batcher = writeBatch(db); let deleteCount = 0; for (const collName of collectionsToDelete) { const snapshot = await getDocs(collection(db, collName)); snapshot.forEach(docSnap => { batcher.delete(docSnap.ref); deleteCount++; }); } if (deleteCount > 0) { await batcher.commit(); } members = []; schedule = {}; attendance = {}; displayMembers(); displaySchedule(); populateAwardMonthSelect(); attendanceMarkingDiv.classList.remove('visible'); attendanceStatusDiv.innerHTML = ""; reportDisplay.innerHTML = ""; backupDataArea.value = ""; restoreDataArea.value = ""; showNotification("Reset Firestore berhasil.", "success"); } catch (err) { console.error("Error resetting data:", err); showNotification("Gagal reset Firestore", "error"); } finally { setLoading(resetButton, false); } }
+    // --- UI & NAVIGATION ---
+    function toggleMenu() { $('#navMenu').classList.toggle('show'); }
+    function setActiveLink(activeSectionId) { $$('#navMenu a').forEach(link => { link.classList.toggle('active-link', link.getAttribute('data-section') === activeSectionId); }); }
+    function showSection(sectionId, clickedLink = null) {
+        $('#navMenu').classList.remove('show'); $$('main section').forEach(sec => sec.classList.remove('active')); const activeSection = $(`#${sectionId}`);
+        if (activeSection) { activeSection.classList.add('active'); setActiveLink(sectionId); $('main').scrollTo({ top: 0, behavior: 'auto' }); }
+        else { console.warn(`Section ${sectionId} not found.`); $('#dashboardSection').classList.add('active'); setActiveLink('dashboardSection'); }
+        try {
+            switch (sectionId) {
+                case "dashboardSection": updateDashboard(); break;
+                case "reportSection": generateReport(); break;
+                case "listSection": applyFilterAndSort(); break;
+                case "inputSection": $('#orderForm').reset(); $$('#orderForm .error-message').forEach(el => el.style.display = 'none'); $$('#orderForm .invalid').forEach(el => el.classList.remove('invalid')); $('#clientName').focus(); break;
+            }
+        } catch(error) { console.error(`Error activating section ${sectionId}:`, error); showToast(`Gagal memuat bagian ${sectionId}.`, "error"); }
+    }
 
-
-        /***********************************************************************
-         *     13) INIT (Unchanged)                                           *
-         ***********************************************************************/
-        initializeAppMainApp();
+    // --- INITIAL LOAD ---
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!db) { showToast("Koneksi Database Gagal! Fitur tidak akan berjalan.", "error", 10000); showLoading = () => {}; hideLoading = () => {}; $('#loadingOverlay').innerHTML = '<p style="color: red; font-weight: bold;">Koneksi Database Gagal</p>'; $('#loadingOverlay').style.backgroundColor = 'rgba(255,200,200,0.8)'; showLoading(); return; }
+        loadData().then(() => { showSection('dashboardSection'); }).catch(err => { console.error("Initial data load failed:", err); showToast("Gagal memuat data awal.", "error"); hideLoading(); });
+    });
 
     </script>
-
 </body>
 </html>
